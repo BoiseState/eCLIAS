@@ -2,11 +2,12 @@
 eCLIAS: Eclipse Concept Location, Impact Analysis, and Search Tool
 
 ## How to use the plugin: 
-1. Download the latest version of [Eclipse](https://www.eclipse.org/downloads/)
-1. Install [PDE](https://marketplace.eclipse.org/content/eclipse-pde-plug-development-environment) for Eclipse. 
+1. Download [Eclipse IDE for Enterprise Java Developers](https://www.eclipse.org/downloads/packages/)
+1. Clone or download the project as zip
+1. Import the downloaded/git project on eclipse 
+1. Run the project as an eclipse application 
 1. 
 	
 
-(M.S. Project Proposal)
 
 Vasanth Geethan Raju
