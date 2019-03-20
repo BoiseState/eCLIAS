@@ -28,7 +28,7 @@ public class SampleHandler extends AbstractHandler {
 		MessageDialog.openInformation(
 				window.getShell(),
 				"Eclias",
-				"Hello, Eclipse world");
+				"Starting to Extract the Corpus");
 		return null;
 	}
 }
