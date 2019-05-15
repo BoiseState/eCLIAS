@@ -18,6 +18,11 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.commons.Method;
+import org.plugin.eclias.corpus.InputOutput;
+import org.plugin.eclias.corpus.InputOutputCorpusMethodLevelGranularity;
+import org.plugin.eclias.corpus.ParserCorpusMethodLevelGranularity;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -26,6 +31,14 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -45,57 +58,81 @@ public class SampleHandler1 extends AbstractHandler {
 	 */
 	 
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-//		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-//		IWorkspaceRoot root = workspace.getRoot();
-//		IProject[] projects = root.getProjects();
-//		String projectsname = Arrays.toString(projects);
-//		System.out.println(projectsname);
-//		
-//		for (IProject project : projects) {
-//			project.getName();
-//			System.out.println(project);
-//		}
-//		
+
+		 IWorkspace workspace = ResourcesPlugin.getWorkspace();
+         IWorkspaceRoot root = workspace.getRoot();
+         // Get all projects in the workspace
+         IProject[] projects = root.getProjects();
+         // Loop over all projects
+         
+         for (IProject project : projects) {
+             try {
+                     if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
+
+                             IPackageFragment[] packages = JavaCore.create(project)
+                                             .getPackageFragments();
+                             // parse(JavaCore.create(project));
+                             for (IPackageFragment mypackage : packages) {
+                                     if (mypackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
+                                             for (ICompilationUnit unit : mypackage
+                                                             .getCompilationUnits()) {
+                                                     // Now create the AST for the ICompilationUnits
+                                                     CompilationUnit parse = parse(unit);
+//                                                     ASTVisitor visitor = new ASTVisitor() {
+//													};
+//                                                     parse.accept(visitor);
+//                                                     System.out.println("*******************");
+//                                                     System.out.println(visitor);
+//                                                     System.out.println("*******************");
+//             
+//                                                     MethodDeclaration method = visitor.getMethods();
+//                                                             System.out.print("Method name: "
+//                                                                             + method.getName()
+//                                                                             + " Return type: "
+//                                                                             + method.getReturnType2());
+//                                                    }  
+//                                                     System.out.println("*******************");
+                                                     System.out.println(parse);   
+                                             }
+                                             
+                                     }
+
+                             }
+                     }
+                     
+             } catch (CoreException e) {
+                     e.printStackTrace();
+             }
+             
+     }
+ 
+       
+ 		String projectsname = Arrays.toString(projects);
+ 		System.out.println(projectsname);
 		
-		HashMap<String, IMethod> methodIDMap;
-		IWorkspace root = ResourcesPlugin.getWorkspace();
-		IProject[] allProjects = root.getRoot().getProjects();
-		methodIDMap = new HashMap<String, IMethod>();
-		for (int i = 0; i < allProjects.length; i++) {
-			try {
-				IJavaProject javaProj = (IJavaProject) allProjects[i]
-						.getNature(JavaCore.NATURE_ID);
-				if (javaProj != null) {
-					IPackageFragment[] frags = javaProj.getPackageFragments();
-					for (IPackageFragment frag : frags) {
-						for (ICompilationUnit unit : frag.getCompilationUnits()) {
-							for (IType type : unit.getAllTypes()) {
-								for (IMethod method : type.getMethods()) {
-									methodIDMap.put(
-											method.getHandleIdentifier(),
-											method);
-								}
-							}
-						}
-					}
-				}
-				System.out.println(methodIDMap);
-			} catch (CoreException e) {
-				 e.printStackTrace();
-			}
-		}
-		String projectsname = Arrays.toString(allProjects);
-		System.out.println(projectsname);
+		
+		
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		MessageDialog.openInformation(
 				window.getShell(),
 				"Eclias",
-				"Starting to extract the corpus:" +projectsname);
+				"Starting to extract the corpus:");
 		
 		return null;
 		
 		    
 	}
+	 private static CompilationUnit parse(ICompilationUnit unit) {
+         ASTParser parser = ASTParser.newParser(AST.JLS3);
+         parser.setKind(ASTParser.K_COMPILATION_UNIT);
+         parser.setSource(unit);
+         parser.setResolveBindings(true);
+         return (CompilationUnit) parser.createAST(null); // parse
+ }
+
+	 
 	
 }
+	
+	
  
