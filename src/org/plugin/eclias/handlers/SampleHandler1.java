@@ -2,8 +2,12 @@ package org.plugin.eclias.handlers;
 
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -57,12 +61,22 @@ public class SampleHandler1 extends AbstractHandler {
 	 * from the application context.
 	 */
 	 
-	public Object execute(ExecutionEvent event) throws ExecutionException {
+	public Object execute(ExecutionEvent event) throws ExecutionException{
 
 		 IWorkspace workspace = ResourcesPlugin.getWorkspace();
          IWorkspaceRoot root = workspace.getRoot();
          // Get all projects in the workspace
          IProject[] projects = root.getProjects();
+         Date date = new Date();  
+         Timestamp ts=new Timestamp(date.getTime());   
+         File file = new File("/Users/Vasanth/git/eCLIAS/inputFiles/"+ ts +".txt");
+		 FileWriter fileWriter = null;
+		try {
+			fileWriter = new FileWriter(file);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
          // Loop over all projects
          
          for (IProject project : projects) {
@@ -78,45 +92,43 @@ public class SampleHandler1 extends AbstractHandler {
                                                              .getCompilationUnits()) {
                                                      // Now create the AST for the ICompilationUnits
                                                      CompilationUnit parse = parse(unit);
-//                                                     ASTVisitor visitor = new ASTVisitor() {
-//													};
-//                                                     parse.accept(visitor);
-//                                                     System.out.println("*******************");
-//                                                     System.out.println(visitor);
-//                                                     System.out.println("*******************");
-//             
-//                                                     MethodDeclaration method = visitor.getMethods();
-//                                                             System.out.print("Method name: "
-//                                                                             + method.getName()
-//                                                                             + " Return type: "
-//                                                                             + method.getReturnType2());
-//                                                    }  
-//                                                     System.out.println("*******************");
-                                                     System.out.println(parse);   
+                                                     String res = parse.toString();
+                                                     fileWriter.write(res);
                                              }
+
                                              
                                      }
 
                              }
                      }
                      
+                     
              } catch (CoreException e) {
                      e.printStackTrace();
-             }
+             } 
              
+             catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+  			
      }
- 
+         try {
+			fileWriter.flush();
+			fileWriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+			
+          
        
  		String projectsname = Arrays.toString(projects);
- 		System.out.println(projectsname);
-		
-		
-		
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		MessageDialog.openInformation(
 				window.getShell(),
 				"Eclias",
-				"Starting to extract the corpus:");
+				"Starting to extract the corpus:" +projectsname);
 		
 		return null;
 		
