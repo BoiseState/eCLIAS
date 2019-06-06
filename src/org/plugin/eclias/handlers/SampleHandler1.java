@@ -2,13 +2,10 @@ package org.plugin.eclias.handlers;
 
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -28,7 +25,6 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -79,20 +75,21 @@ public class SampleHandler1 extends AbstractHandler {
 
 	}
 	private static void parseMainProject() throws Exception{ 
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IWorkspaceRoot root = workspace.getRoot();
+		IWorkspace workspace1 = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot root1 = workspace1.getRoot();
 		// Get all projects in the workspace
-
-		IProject[] projects = root.getProjects();
-		System.out.println(projects);
+		IProject[] projects1 = root1.getProjects();
+		//System.out.println(projects1);
 		Date date = Calendar.getInstance().getTime();  
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd_hh-mm-ss");  
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_hh-mm-ss");  
 		String strDate = dateFormat.format(date); 
-		for (IProject project1 : projects) {
+		
+		for (IProject project1 : projects1) {
 			String projectsname = project1.toString();
 			System.out.println(projectsname);
 		File newDirectory = new File("/Users/Vasanth/git/eCLIAS/inputFiles/"+ projectsname);
-		if(newDirectory.mkdirs()){
+		newDirectory.mkdirs();
+		if(newDirectory != null){
 		File file = new File("/Users/Vasanth/git/eCLIAS/inputFiles/"+ strDate +".txt");
 		FileWriter fileWriter = null;
 
@@ -104,11 +101,11 @@ public class SampleHandler1 extends AbstractHandler {
 		}
 		// Loop over all projects
 
-		for (IProject project : projects) {
+		for (IProject project2 : projects1) {
 			try {
-				if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
+				if (project2.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
 
-					IPackageFragment[] packages = JavaCore.create(project)
+					IPackageFragment[] packages = JavaCore.create(project2)
 							.getPackageFragments();
 					// parse(JavaCore.create(project));
 					for (IPackageFragment mypackage : packages) {
@@ -118,7 +115,6 @@ public class SampleHandler1 extends AbstractHandler {
 								// Now create the AST for the ICompilationUnits
 								CompilationUnit parse = parse(unit);
 								String res = parse.toString();
-								
 								fileWriter.write(res);
 							} 
 						}
@@ -138,7 +134,6 @@ public class SampleHandler1 extends AbstractHandler {
 		}
 		try {
 			fileWriter.flush();
-			
 			fileWriter.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -148,6 +143,7 @@ public class SampleHandler1 extends AbstractHandler {
 		}
 		}
 	}
+	
 	private static CompilationUnit parse(ICompilationUnit unit) {
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
