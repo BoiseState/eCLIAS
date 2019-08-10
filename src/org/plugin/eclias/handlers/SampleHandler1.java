@@ -1,6 +1,5 @@
 package org.plugin.eclias.handlers;
 
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,9 +29,9 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
+ * 
  * @see org.eclipse.core.commands.IHandler
  * @see org.eclipse.core.commands.AbstractHandler
  */
@@ -44,17 +43,17 @@ public class SampleHandler1 extends AbstractHandler {
 	}
 
 	/**
-	 * the command has been executed, so extract extract the needed information
-	 * from the application context.
+	 * the command has been executed, so extract extract the needed information from
+	 * the application context.
 	 */
 
-	public Object execute(ExecutionEvent event) throws ExecutionException {		
-		
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root = workspace.getRoot();
 		// Get all projects in the workspace
 		IProject[] projects = root.getProjects();
-		
+
 		try {
 			parseMainProject();
 			System.out.println("Check:1");
@@ -62,88 +61,77 @@ public class SampleHandler1 extends AbstractHandler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		String projectsname = Arrays.toString(projects);
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		MessageDialog.openInformation(
-				window.getShell(),
-				"Eclias",
-				"Starting to extract the corpus:" +projectsname);
+		MessageDialog.openInformation(window.getShell(), "Eclias", "Starting to extract the corpus:" + projectsname);
 
 		return null;
 
-
 	}
-	private static void parseMainProject() throws Exception{ 
+
+	private static void parseMainProject() throws Exception {
 		IWorkspace workspace1 = ResourcesPlugin.getWorkspace();
 		IWorkspaceRoot root1 = workspace1.getRoot();
 		// Get all projects in the workspace
 		IProject[] projects1 = root1.getProjects();
-		//System.out.println(projects1);
-		Date date = Calendar.getInstance().getTime();  
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_hh-mm-ss");  
-		String strDate = dateFormat.format(date); 
-		
+		// System.out.println(projects1);
+		Date date = Calendar.getInstance().getTime();
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_hh-mm-ss");
+		String strDate = dateFormat.format(date);
+
 		for (IProject project1 : projects1) {
 			String projectsname = project1.toString();
 			System.out.println(projectsname);
-		File newDirectory = new File("/Users/Vasanth/git/eCLIAS/inputFiles/"+ projectsname);
-		newDirectory.mkdirs();
-		if(newDirectory != null){
-		File file = new File("/Users/Vasanth/git/eCLIAS/inputFiles/"+ strDate +".txt");
-		FileWriter fileWriter = null;
+			// System.out.println(System.getProperty("user.dir"));
+			File newDirectory = new File("./inputFiles/" + projectsname);
+			newDirectory.mkdirs();
+			if (newDirectory != null) {
+				File file = new File(strDate + ".txt");
+				FileWriter fileWriter = null;
+				String res;
+				try {
+					fileWriter = new FileWriter(file);
+				// Loop over all projects
 
-		try {
-			fileWriter = new FileWriter(file);
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		// Loop over all projects
+						if (project1.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
 
-		for (IProject project2 : projects1) {
-			try {
-				if (project2.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
-
-					IPackageFragment[] packages = JavaCore.create(project2)
-							.getPackageFragments();
-					// parse(JavaCore.create(project));
-					for (IPackageFragment mypackage : packages) {
-						if (mypackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
-							for (ICompilationUnit unit : mypackage
-									.getCompilationUnits()) {
-								// Now create the AST for the ICompilationUnits
-								CompilationUnit parse = parse(unit);
-								String res = parse.toString();
-								fileWriter.write(res);
-							} 
+							IPackageFragment[] packages = JavaCore.create(project1).getPackageFragments();
+							// parse(JavaCore.create(project));
+							for (IPackageFragment mypackage : packages) {
+								if (mypackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
+									for (ICompilationUnit unit : mypackage.getCompilationUnits()) {
+										// Now create the AST for the ICompilationUnits
+										CompilationUnit parse = parse(unit);
+										res = parse.toString();
+										fileWriter.write(res);
+									}
+								}
+							}
 						}
+						else 
+						{
+							System.out.println("error");
+						}
+
+					} catch (CoreException | IOException e) {
+						e.printStackTrace();
 					}
+
+				
+				try {
+					fileWriter.flush();
+					fileWriter.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-
-
-			} catch (CoreException e) {
-				e.printStackTrace();
-			} 
-
-			catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
-
-		}
-		try {
-			fileWriter.flush();
-			fileWriter.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		FileUtils.copyFileToDirectory(file, newDirectory);
-		}
+				FileUtils.copyFileToDirectory(file, newDirectory);
+			}
+			
 		}
 	}
-	
+
 	private static CompilationUnit parse(ICompilationUnit unit) {
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -152,8 +140,4 @@ public class SampleHandler1 extends AbstractHandler {
 		return (CompilationUnit) parser.createAST(null); // parse
 	}
 
-
 }
-
-
-
