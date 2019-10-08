@@ -11,6 +11,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.plugin.eclias.corpus.MainCorpusGenerator;
+import org.plugin.eclias.index.LuceneWriteIndexFromFile;
+import org.plugin.eclias.preprocessor.MainCorpusPreprocessor;
 import org.eclipse.jface.dialogs.MessageDialog;
 
 
@@ -39,9 +41,16 @@ public class SampleHandler1 extends AbstractHandler {
 		// Get all projects in the workspace
 		IProject[] projects = root.getProjects();
 		try {
-			MainCorpusGenerator mcg = new MainCorpusGenerator();
-			mcg.main(null);
-			System.out.println("Corpus Generated");
+//			MainCorpusGenerator mcg = new MainCorpusGenerator();
+//			mcg.main(null);
+//			System.out.println("Corpus Generated");
+//			MainCorpusPreprocessor mcp = new MainCorpusPreprocessor();
+//			mcp.main(null);
+//			System.out.println("Preprocessing Generated");
+			LuceneWriteIndexFromFile Li = new LuceneWriteIndexFromFile();
+			Li.main(null);
+			Li.search("Hello world");
+			System.out.println("Working");
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -50,10 +59,9 @@ public class SampleHandler1 extends AbstractHandler {
 
 		String projectsname = Arrays.toString(projects);
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		MessageDialog.openInformation(window.getShell(), "Eclias", "Corpus Extracted for the following projects:" + projectsname);
+		MessageDialog.openInformation(window.getShell(), "Eclias", "Corpus Extracted and Indexed for the following projects:" + projectsname);
 		return null;
 
 	}
-
 
 }
