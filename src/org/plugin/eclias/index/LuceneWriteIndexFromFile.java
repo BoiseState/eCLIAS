@@ -3,9 +3,11 @@ package org.plugin.eclias.index;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
@@ -52,7 +54,6 @@ public class LuceneWriteIndexFromFile
 	static Analyzer analyzer;
 	private static IndexReader reader;
 	private static Query query;
-	private static String indexPath;
 
 	public static void main(String[] args) throws Exception
 	{
@@ -77,7 +78,7 @@ public class LuceneWriteIndexFromFile
 				System.out.println(projectsname);
 				File indexPath1 = new File("/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname);
 				indexPath1.mkdirs();
-				indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
+				String indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
 
 				// org.apache.lucene.store.Directory instance
 				Directory dir = FSDirectory.open(Paths.get(indexPath));
@@ -208,7 +209,8 @@ public class LuceneWriteIndexFromFile
 		return null;
 	}
 	
-//	private static final String INDEX_DIR = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/P/jEdit4.3pre9";
+	private static final String INDEX_DIR = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/P/jEdit4.3pre9";
+	
 	 
 	    public static String search(String queryString) throws Exception
 	    {
@@ -221,15 +223,16 @@ public class LuceneWriteIndexFromFile
 	        //Total found documents
 	        System.out.println("Total Results :: " + foundDocs.totalHits);
 	        String answer = "Total Results :: " + foundDocs.totalHits;
-	        String score = null;
+	        List<String> score = new ArrayList<String>();
 	        //Let's print out the path of files which have searched term
 	        for (ScoreDoc sd : foundDocs.scoreDocs)
 	        {
 	            Document d = searcher.doc(sd.doc);
-	            System.out.println("Path : "+ d.get("path") + "\n Score : " + sd.score);
-	            score = "\nPath : "+ d.get("path") + "\nScore : " + sd.score;
+	            System.out.println("Path : "+ d.get("path") + "\n Score : " + sd.score + "\nmethod: " + d.get("filename"));
+	            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\ntitle: " + d.get("title"); 
+	            score.add(finalscore);
 	        }
-	        String finalAnswer = answer + score; 
+	        String finalAnswer = answer + "\n" + score + "\n"; 
 	        
 			return finalAnswer;
 	    }
@@ -241,13 +244,14 @@ public class LuceneWriteIndexFromFile
 	        Query query = qp.parse(textToFind);
 	         
 	        //search the index
-	        TopDocs hits = searcher.search(query, 10);
+	        TopDocs hits = searcher.search(query, 50);
 	        return hits;
 	    }
 	 
 	    private static IndexSearcher createSearcher() throws IOException
 	    {
-	        Directory dir = FSDirectory.open(Paths.get(indexPath));
+	    	
+	        Directory dir = FSDirectory.open(Paths.get(INDEX_DIR));
 	         
 	        //It is an interface for accessing a point-in-time view of a lucene index
 	        IndexReader reader = DirectoryReader.open(dir);
