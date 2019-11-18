@@ -209,6 +209,8 @@ public class LuceneWriteIndexFromFile
 		return null;
 	}
 	
+	
+	
 	private static final String INDEX_DIR = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/P/jEdit4.3pre9";
 	
 	 
@@ -221,15 +223,14 @@ public class LuceneWriteIndexFromFile
 	        TopDocs foundDocs = searchInContent(queryString, searcher);
 	         
 	        //Total found documents
-	        System.out.println("Total Results :: " + foundDocs.totalHits);
+//	        System.out.println("Total Results :: " + foundDocs.totalHits);
 	        String answer = "Total Results :: " + foundDocs.totalHits;
 	        List<String> score = new ArrayList<String>();
 	        //Let's print out the path of files which have searched term
 	        for (ScoreDoc sd : foundDocs.scoreDocs)
 	        {
 	            Document d = searcher.doc(sd.doc);
-	            System.out.println("Path : "+ d.get("path") + "\n Score : " + sd.score + "\nmethod: " + d.get("filename"));
-	            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\ntitle: " + d.get("title"); 
+	            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\n"; 
 	            score.add(finalscore);
 	        }
 	        String finalAnswer = answer + "\n" + score + "\n"; 
@@ -264,5 +265,7 @@ public class LuceneWriteIndexFromFile
 	    public static Query getQuery() {
 			return query;
 		}
+	    
+	    
 
 }

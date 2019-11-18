@@ -4,8 +4,12 @@ package org.plugin.eclias.views;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.*;
+import org.plugin.eclias.corpus.MainCorpusGenerator;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile;
+import org.plugin.eclias.preprocessor.MainCorpusPreprocessor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
@@ -18,6 +22,10 @@ import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -57,10 +65,12 @@ public class EcliasView extends ViewPart {
 	private Button searchButton;
 	private Button clearButton;
 	private StyledText queryText;
+	private StyledText queryText1;
 
 
 	//private MethodListWidget resultList;
 	private Label resultsLabel;
+	private MethodListWidget resultList;
 
 	 
 
@@ -125,7 +135,6 @@ public class EcliasView extends ViewPart {
 		GridData queryLabelGridData = new GridData(SWT.LEFT, SWT.BOTTOM, true,
 				false);
 		queryLabel.setLayoutData(queryLabelGridData);
-		
 		searchButton = new Button(queryComposite, SWT.PUSH);
 		searchButton.setText("Search");
 		GridData searchButtonGridData = new GridData(SWT.END, SWT.END, false,
@@ -137,7 +146,15 @@ public class EcliasView extends ViewPart {
 //				startSearch();
 				try {
 					String s = LuceneWriteIndexFromFile.search(queryText.getText());
-					showMessage(s);
+//					MainCorpusGenerator mcg = new MainCorpusGenerator();
+//					mcg.main(null);
+//					System.out.println("Corpus Generated");
+//					MainCorpusPreprocessor mcp = new MainCorpusPreprocessor();
+//					mcp.main(null);
+//					System.out.println("Preprocessing Generated");
+					
+//					String names = s.replaceAll(",", "");
+					queryText1.setText(s);
 					
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -155,14 +172,8 @@ public class EcliasView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				queryText.setText("");
-				try {
-					LuceneWriteIndexFromFile.search(queryText.getText());
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-//				startSearch();
-				
+//				resultsLabel.setText("");
+				queryText1.setText("");
 			}
 		});
 
@@ -171,7 +182,7 @@ public class EcliasView extends ViewPart {
 		queryText.setEditable(true);
 		GridData queryGridData = new GridData(SWT.FILL, SWT.BEGINNING, true,
 				false);
-		queryGridData.heightHint = 75;
+		queryGridData.heightHint = 50;
 		queryText.setLayoutData(queryGridData);
 		queryText.setAlwaysShowScrollBars(false);
 		queryText.addVerifyKeyListener(new VerifyKeyListener() {
@@ -191,102 +202,44 @@ public class EcliasView extends ViewPart {
 		});
 
 		queryText.setText("");
+		
 		resultsLabel = new Label(parent, SWT.PUSH);
-//		updateResultsLabelText(null);
+		resultsLabel.setText("Results:");
 		resultsLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
+			
+		queryText1 = new StyledText(parent, SWT.BORDER | SWT.MULTI
+				| SWT.V_SCROLL | SWT.WRAP);
+		queryText1.setEditable(false);
+		GridData queryGridData1 = new GridData(SWT.FILL, SWT.BEGINNING, true,
+				false);
+		queryGridData1.heightHint = 100;
+		queryText1.setLayoutData(queryGridData1);
+		queryText1.setAlwaysShowScrollBars(false);
+//		queryText1.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//					
+//			}
+//			});
+		
+			 
 //		resultList = new MethodListWidget(parent, SWT.H_SCROLL | SWT.V_SCROLL
 //				| SWT.BORDER, true);
 	
 	}
 
-	
-//	private void hookContextMenu() {
-//		MenuManager menuMgr = new MenuManager("#PopupMenu");
-//		menuMgr.setRemoveAllWhenShown(true);
-//		menuMgr.addMenuListener(new IMenuListener() {
-//			public void menuAboutToShow(IMenuManager manager) {
-//				EcliasView.this.fillContextMenu(manager);
-//			}
-//		});
-//		Menu menu = menuMgr.createContextMenu(viewer.getControl());
-//		viewer.getControl().setMenu(menu);
-//		getSite().registerContextMenu(menuMgr, viewer);
-//	}
-//
-//	private void contributeToActionBars() {
-//		IActionBars bars = getViewSite().getActionBars();
-//		fillLocalPullDown(bars.getMenuManager());
-//		fillLocalToolBar(bars.getToolBarManager());
-//	}
-//
-//	private void fillLocalPullDown(IMenuManager manager) {
-//		manager.add(action1);
-//		manager.add(new Separator());
-//		manager.add(action2);
-//	}
-//
-//	private void fillContextMenu(IMenuManager manager) {
-//		manager.add(action1);
-//		manager.add(action2);
-//		// Other plug-ins can contribute there actions here
-//		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-//	}
-//	
-//	private void fillLocalToolBar(IToolBarManager manager) {
-//		manager.add(action1);
-//		manager.add(action2);
-//	}
-//
-//	private void makeActions() {
-//		action1 = new Action() {
-//			public void run() {
-//				showMessage("Action 1 executed");
-//			}
-//		};
-//		action1.setText("Action 1");
-//		action1.setToolTipText("Action 1 tooltip");
-//		action1.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-//			getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-//		
-//		action2 = new Action() {
-//			public void run() {
-//				showMessage("Action 2 executed");
-//			}
-//		};
-//		action2.setText("Action 2");
-//		action2.setToolTipText("Action 2 tooltip");
-//		action2.setImageDescriptor(workbench.getSharedImages().
-//				getImageDescriptor(ISharedImages.IMG_OBJS_INFO_TSK));
-//		doubleClickAction = new Action() {
-//			public void run() {
-//				IStructuredSelection selection = viewer.getStructuredSelection();
-//				Object obj = selection.getFirstElement();
-//				showMessage("Double-click detected on "+obj.toString());
-//			}
-//		};
-//	}
-//
-//	private void hookDoubleClickAction() {
-//		viewer.addDoubleClickListener(new IDoubleClickListener() {
-//			public void doubleClick(DoubleClickEvent event) {
-//				doubleClickAction.run();
-//			}
-//		});
-//	}
+
 	private void showMessage(String message) {
 		MessageDialog.openInformation(
 			viewer.getControl().getShell(),
 			"Eclias Tool",
 			message);
 	}
-
+	
 	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-	
-
-			
+		
 
 }
