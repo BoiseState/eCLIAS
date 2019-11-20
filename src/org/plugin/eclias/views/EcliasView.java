@@ -3,6 +3,7 @@ package org.plugin.eclias.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -22,10 +23,6 @@ import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -66,12 +63,13 @@ public class EcliasView extends ViewPart {
 	private Button clearButton;
 	private StyledText queryText;
 	private StyledText queryText1;
+	private Shell shell;
 
 
 	//private MethodListWidget resultList;
 	private Label resultsLabel;
 	private MethodListWidget resultList;
-
+	private MessageBox messageBox;
 	 
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -116,6 +114,8 @@ public class EcliasView extends ViewPart {
 //		hookContextMenu();
 //		hookDoubleClickAction();
 //		contributeToActionBars();
+		shell = new Shell();
+		messageBox = new MessageBox(shell);
 		
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -154,7 +154,10 @@ public class EcliasView extends ViewPart {
 //					System.out.println("Preprocessing Generated");
 					
 //					String names = s.replaceAll(",", "");
+					MessageDialog.openInformation(shell, "Eclias", "Corpus Extracted and Indexed for the following projects:");
 					queryText1.setText(s);
+
+//					resultList.setText(s);
 					
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -215,13 +218,23 @@ public class EcliasView extends ViewPart {
 		queryGridData1.heightHint = 100;
 		queryText1.setLayoutData(queryGridData1);
 		queryText1.setAlwaysShowScrollBars(false);
-//		queryText1.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//					
-//			}
-//			});
-		
+		queryText1.setDoubleClickEnabled(true);
+		queryText1.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+//					showMessage("You clicked me!");
+					System.out.println("you clicked me");
+					try {
+//						String s = LuceneWriteIndexFromFile.search(queryText.getText());
+						messageBox.open();
+						messageBox.setMessage("Path: set Property method Sets the value of buffer local property param name The property name param value The property value since Edit pre public void set Property String name Object value if value null properties remove name else Prop Value test properties get name if test null properties put name new Prop Value value false else if test value equals value do nothing else test value value test default Value false \n" );
+					} catch (Exception e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+			}
+			});
 			 
 //		resultList = new MethodListWidget(parent, SWT.H_SCROLL | SWT.V_SCROLL
 //				| SWT.BORDER, true);
