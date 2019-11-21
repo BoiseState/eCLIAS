@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
@@ -28,6 +26,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -50,6 +49,7 @@ import org.eclipse.jdt.core.JavaCore;
 
 public class LuceneWriteIndexFromFile
 {
+	static HashMap<IMethod, Method> methods = new HashMap<IMethod, Method>();
 	static HashMap<String, IMethod> methodMap = new HashMap<String, IMethod>();
 	static HashMap<String, IMethod> methodIDMap = new HashMap<String, IMethod>();
 	static IProgressMonitor monitor;
@@ -57,26 +57,29 @@ public class LuceneWriteIndexFromFile
 	private static IndexReader reader;
 	private static Query query;
 	private static String projectsname;
-	private static String indexPath;
+	private static String indexPath = "";
 	
    public static class Score{
 	   
 		float score;
-		String path;
-		Score(float score, String path){
+		IMethod method;
+		
+		Score(float score, IMethod method){
 			this.score = score;
-			this.path = path;
+			this.method = method;
 		}
+		
 		public float getScore(){
 			return score;
 		}
-		public String getPath() {
-			return path;
+		
+		public IMethod getMethod() {
+			return method;
 		}
 		
 	}
 
-	public static void main(String[] args) throws Exception
+	public static void index() throws Exception
 	{
 		IWorkspace root = ResourcesPlugin.getWorkspace();
 		IProject[] allProjects = root.getRoot().getProjects();
@@ -95,57 +98,78 @@ public class LuceneWriteIndexFromFile
 						}
 					}
 				}
-				projectsname = project.toString();
+				
+				// List the projects in the explorer tab
+				projectsname = project.toString(); 
 				System.out.println(projectsname);
-				File indexPath1 = new File("/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname);
-				indexPath1.mkdirs();
-				indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
+				
+				// Creating a new directory to store indexed files
+				File newDirectory= new File("/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname);
+				newDirectory.mkdirs();
+				
+				// Path of indexed files 
+				System.out.println("assigning index path");
+				indexPath += "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
 
-				// org.apache.lucene.store.Directory instance
-				Directory dir = FSDirectory.open(Paths.get(indexPath));
+				
 
 				// analyzer with the default stop words
 //				Analyzer analyzer = new StandardAnalyzer();
 
-				// IndexWriter Configuration
-				IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer());
-				iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
+				
 
 				// IndexWriter writes new index files to the directory
 				//IndexWriter writer = new IndexWriter(dir, iwc);
 				// Its recursive method to iterate all files and directories
 				//indexDocs(writer, docDir);
+				
+				
 				Job job = new Job("Lucene Indexing") {
 
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
-
+						
 						IndexWriter writer;
 						try {
+							
+							// org.apache.lucene.store.Directory instance
+							Directory dir = FSDirectory.open(Paths.get(indexPath));
+							
+							// IndexWriter Configuration
+							IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer());
+							iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
+							
+							// IndexWriter writes new index files to the directory
 							writer = new IndexWriter(dir, iwc);
+							
 							writer.deleteAll();
+							
 							monitor.beginTask("Building index",
 									methodIDMap.size());
-							int count = 0;
-							System.out.println();
+							
+//							int count = 0;
+							
+//							System.out.println("methodIDMap: KeySet = " +methodIDMap.keySet()); //trying to print out what's the value
+							
 							for (String key : methodIDMap.keySet()) {
-								indexDoc(writer, methodIDMap.get(key));
-								
-								System.out.println("document is:" +methodIDMap.get(key));
-								
+								indexDoc(writer, methodIDMap.get(key)); 
 								monitor.worked(1);
-								int check = writer.numDocs();
-								
-								while(count<=check) {
-									count ++;
-										 }	
+//								System.out.println("document is:" +methodIDMap.get(key));								
 							}
+//								int check = writer.numDocs();
+								
+//								while(count<=check) {
+//									count ++;
+//										 }	
+//							}
 							monitor.done();
 							writer.close();
-							System.out.println("Count is:" +count);
-							// print all info about writer
-							System.out.println("writer is:" +writer.toString());
-							System.out.println("Monitor is:" +monitor.toString());
+							
+//							
+//							System.out.println("Count is:" +count);
+//							// print all info about writer
+//							System.out.println("writer is:" +writer.toString());
+//							System.out.println("Monitor is:" +monitor.toString());
 
 							
 //							Terms terms = null;
@@ -161,16 +185,14 @@ public class LuceneWriteIndexFromFile
 					}
 				};
 				job.setPriority(Job.LONG);
-				// job.setRule(new CodeModelRule());
 				job.setUser(true);
 				job.schedule();
 
 			}
 			else {
-				System.out.println("error");
+				System.out.println("error - It's not a project");
 			}	
 		}
-
 	}
 
 
@@ -181,12 +203,14 @@ public class LuceneWriteIndexFromFile
 		try {
 			method.getOpenable().open(new NullProgressMonitor());
 			source = method.getSource();
+//			System.out.println("source is:"+source);
 			if (source != null) {
 				source = IRUtil.splitAndMergeCamelCase(source);
+				
 				doc.add(new StringField("path", source, Field.Store.YES));
 				doc.add(new LongPoint("modified", lastModified));
 				doc.add(new TextField("contents", source, Store.YES));
-				
+				doc.add(new TextField("nodeHandlerID", method.getHandleIdentifier(), Field.Store.YES));
 				writer.addDocument(doc);
 
 			}
@@ -235,69 +259,135 @@ public class LuceneWriteIndexFromFile
 	}
 	
 	
-	
-//	private static final String INDEX_DIR = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/P/jEdit4.3pre9";
-	
-	
+		
 	public static ArrayList<Score> search(String queryString) throws Exception
     {
-    	ArrayList<Score> r = new ArrayList<>();
+		
+		
+    	ArrayList<Score> searchResults = new ArrayList<>();
+    	
     	
     	
         //Create lucene searcher. It search over a single IndexReader.
-        IndexSearcher searcher = createSearcher();
+//        IndexSearcher searcher = createSearcher();
+        
+        methodMap = new HashMap<String, IMethod>();
+		
+        System.out.println("indexPath:" +indexPath);
+        Directory dir = FSDirectory.open(Paths.get(indexPath));
+         
+        //It is an interface for accessing a point-in-time view of a lucene index
+        IndexReader reader = DirectoryReader.open(dir);
+        
+        for (int i = 0; i < reader.numDocs(); i++) {
+			String methodID = reader.document(i).get(
+					"nodeHandlerID");
+			System.out.println("methodID is" +methodID);
+			
+//			if (methodID == null
+//					|| methodMap.containsKey(methodID))
+//				continue;
+//			System.out.println("methodIDMAP coming here null or not?" +methodIDMap);
+			if (methodIDMap.containsKey(methodID)) {
+				IMethod method = methodIDMap.get(methodID);
+				System.out.println("methodIDMAP" +methodID);
+				methodMap.put(methodID, method);
+//				System.out.println("methodMap put working?" +methodMap);
+			}
+			
+        }
+         
+        //Index searcher
+        IndexSearcher searcher = new IndexSearcher(reader);
+        
          
         //Search indexed contents using search term
         TopDocs foundDocs = searchInContent(queryString, searcher);
          
         //Total found documents
-//        System.out.println("Total Results :: " + foundDocs.totalHits);
+        System.out.println("Total Results :: " + foundDocs.totalHits);
         
-        String answer = "Total Results :: " + foundDocs.totalHits;
+//        String answer = "Total Results :: " + foundDocs.totalHits;
         
         //Let's print out the path of files which have searched term
+        
         for (ScoreDoc sd : foundDocs.scoreDocs)
-        {
-            Document d = searcher.doc(sd.doc);
-            Score s = new Score(sd.score, d.get("path"));
-            r.add(s);
+        {	
+        	Document doc = searcher.doc(sd.doc);
+        	Float similarity = normalize(sd.score);
+//        	System.out.println("methodMap before doc get nodeHandlerID:" + methodMap);
+            IMethod member = methodMap.get(doc.get("nodeHandlerID"));
+            
+//            Method method1 = getMethod((IMethod) member);
+
+            Score s = new Score(similarity, member);
+            
+            searchResults.add(s);
             
         }
 //        for(Score sc : r) {
 //        	System.out.println(sc.getScore() + ": "+sc.getPath());
 //        }
 //    
-//        
-		return r;
+//    
+		
+		return searchResults;
     }
 	    private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception
 	    {
 	        //Create search query
 	        QueryParser qp = new QueryParser("contents", new StandardAnalyzer());
-	        Query query = qp.parse(textToFind);
+	        textToFind = IRUtil.splitAndMergeCamelCase(textToFind);
+	        Query query = qp.parse(QueryParserUtil.escape(textToFind));
 	         
 	        //search the index
-	        TopDocs hits = searcher.search(query, 50);
+	        TopDocs hits = searcher.search(query, Integer.MAX_VALUE);
 	        return hits;
 	    }
 	 
-	    private static IndexSearcher createSearcher() throws IOException
-	    {
-	    	
-	        Directory dir = FSDirectory.open(Paths.get(indexPath));
-	         
-	        //It is an interface for accessing a point-in-time view of a lucene index
-	        IndexReader reader = DirectoryReader.open(dir);
-	         
-	        //Index searcher
-	        IndexSearcher searcher = new IndexSearcher(reader);
-	        return searcher;
-	    }
+//	    private static IndexSearcher createSearcher() throws IOException
+//	    {
+//	    	
+//	    	methodMap = new HashMap<String, IMethod>();
+//			
+//	        Directory dir = FSDirectory.open(Paths.get(INDEX_DIR));
+//	         
+//	        //It is an interface for accessing a point-in-time view of a lucene index
+//	        IndexReader reader = DirectoryReader.open(dir);
+//	        
+//	        for (int i = 0; i < reader.numDocs(); i++) {
+//				String methodID = reader.document(i).get(
+//						"nodeHandlerID");
+//				if (methodID == null
+//						|| methodMap.containsKey(methodID))
+//					continue;
+//				if (methodIDMap.containsKey(methodID)) {
+//					IMethod method = methodIDMap.get(methodID);
+//					methodMap.put(methodID, method);
+//				}
+//			}
+//	         
+//	        //Index searcher
+//	        IndexSearcher searcher = new IndexSearcher(reader);
+//	        
+//	        return searcher;
+//	    }
 	    
 	    public static Query getQuery() {
 			return query;
 		}
 	    
+//	    private static Method getMethod(IMethod iMethod) {
+//			if (!methods.containsKey(iMethod)) {
+//				
+//				methods.put(iMethod, new Method(iMethod) );
+//			}
+//			return methods.get(iMethod);
+//		}
 	    
-
+	    private static Float normalize(float score) {
+	 			return (float) (1.0 - Math.pow(1.0 / (1.0 + 0.2 * score), 5));
+	 		}
+	    
+	    
 }

@@ -147,7 +147,9 @@ public class EcliasView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 //				startSearch();
+				
 				try {
+					LuceneWriteIndexFromFile.index();
 					ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
 //					MainCorpusGenerator mcg = new MainCorpusGenerator();
 //					mcg.main(null);
@@ -155,13 +157,12 @@ public class EcliasView extends ViewPart {
 //					MainCorpusPreprocessor mcp = new MainCorpusPreprocessor();
 //					mcp.main(null);
 //					System.out.println("Preprocessing Generated");
-					
 //					MessageDialog.openInformation(shell, "Eclias", "Corpus Extracted and Indexed for the following projects:");
 					
 					for(Score sc : s) {
 					      TableItem item = new TableItem(table, SWT.NONE);
 					      item.setText(0, sc.getScore()+"");
-					      item.setText(1, sc.getPath());
+					      item.setText(1, sc.getMethod()+"");
 					    }
 						
 //			        }
@@ -255,7 +256,7 @@ public class EcliasView extends ViewPart {
 		
 //	    table.setBounds(250, 250, 220, 200);
 	    
-	    String[] titles = {"Score", "Path"};
+	    String[] titles = {"Score", "Method, Class, Package"};
 	    for (int i = 0; i < titles.length; i++) {
 	      TableColumn column = new TableColumn(table, SWT.NONE);
 	      column.setText(titles[i]);
