@@ -2,12 +2,14 @@ package org.plugin.eclias.index;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
@@ -54,6 +56,22 @@ public class LuceneWriteIndexFromFile
 	static Analyzer analyzer;
 	private static IndexReader reader;
 	private static Query query;
+	
+   public static class Score{
+		float score;
+		String path;
+		Score(float score, String path){
+			this.score = score;
+			this.path = path;
+		}
+		public float getScore(){
+			return score;
+		}
+		public String getPath() {
+			return path;
+		}
+		
+	}
 
 	public static void main(String[] args) throws Exception
 	{
@@ -214,30 +232,105 @@ public class LuceneWriteIndexFromFile
 	private static final String INDEX_DIR = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/P/jEdit4.3pre9";
 	
 	 
-	    public static String search(String queryString) throws Exception
-	    {
-	        //Create lucene searcher. It search over a single IndexReader.
-	        IndexSearcher searcher = createSearcher();
-	         
-	        //Search indexed contents using search term
-	        TopDocs foundDocs = searchInContent(queryString, searcher);
-	         
-	        //Total found documents
-//	        System.out.println("Total Results :: " + foundDocs.totalHits);
-	        String answer = "Total Results :: " + foundDocs.totalHits;
-	        List<String> score = new ArrayList<String>();
-	        //Let's print out the path of files which have searched term
-	        for (ScoreDoc sd : foundDocs.scoreDocs)
-	        {
-	            Document d = searcher.doc(sd.doc);
-	            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\n"; 
-	            score.add(finalscore);
-	        }
-	        String finalAnswer = answer + "\n" + score + "\n"; 
-	        
-			return finalAnswer;
-	    }
+//	    public static String search(String queryString) throws Exception
+//	    {
+//	    	
+//	        //Create lucene searcher. It search over a single IndexReader.
+//	        IndexSearcher searcher = createSearcher();
+//	         
+//	        //Search indexed contents using search term
+//	        TopDocs foundDocs = searchInContent(queryString, searcher);
+//	         
+//	        //Total found documents
+////	        System.out.println("Total Results :: " + foundDocs.totalHits);
+//	        
+//	        String answer = "Total Results :: " + foundDocs.totalHits;
+//	        
+//	        List<String> score = new ArrayList<String>();
+//	        //Let's print out the path of files which have searched term
+//	        for (ScoreDoc sd : foundDocs.scoreDocs)
+//	        {
+//	            Document d = searcher.doc(sd.doc);
+//	            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\n"; 
+//	            
+//	            score.add(finalscore);
+//	        }
+//	        String finalAnswer = answer + "\n" + score + "\n"; 
+//	        
+//			return finalAnswer;
+//	    }
 	     
+//    public static HashMap<Float, ArrayList<String>> search(String queryString) throws Exception
+//    {
+//    	HashMap<Float, ArrayList<String>> r = new HashMap<>();
+//    	
+//    	
+//        //Create lucene searcher. It search over a single IndexReader.
+//        IndexSearcher searcher = createSearcher();
+//         
+//        //Search indexed contents using search term
+//        TopDocs foundDocs = searchInContent(queryString, searcher);
+//         
+//        //Total found documents
+////        System.out.println("Total Results :: " + foundDocs.totalHits);
+//        
+//        String answer = "Total Results :: " + foundDocs.totalHits;
+//        
+//        List<String> score = new ArrayList<String>();
+//        //Let's print out the path of files which have searched term
+//        for (ScoreDoc sd : foundDocs.scoreDocs)
+//        {
+//            Document d = searcher.doc(sd.doc);
+//            float key = sd.score;
+//            if(!r.containsKey(key)) {
+//            	r.put(key, new ArrayList<String>());
+//            }
+//            r.get(key).add(d.get("path"));
+////            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\n"; 
+//            
+////            score.add(finalscore);
+//        }
+////        String finalAnswer = answer + "\n" + score + "\n"; 
+//        for(Entry e : r.entrySet()) {
+//        	System.out.println("Score : "+e.getKey() +" ---> "+e.getValue());
+//        }
+//        
+//		return r;
+//    }
+	
+	public static ArrayList<Score> search(String queryString) throws Exception
+    {
+    	ArrayList<Score> r = new ArrayList<>();
+    	
+    	
+        //Create lucene searcher. It search over a single IndexReader.
+        IndexSearcher searcher = createSearcher();
+         
+        //Search indexed contents using search term
+        TopDocs foundDocs = searchInContent(queryString, searcher);
+         
+        //Total found documents
+//        System.out.println("Total Results :: " + foundDocs.totalHits);
+        
+        String answer = "Total Results :: " + foundDocs.totalHits;
+        
+//        List<String> score = new ArrayList<String>();
+        //Let's print out the path of files which have searched term
+        for (ScoreDoc sd : foundDocs.scoreDocs)
+        {
+            Document d = searcher.doc(sd.doc);
+            Score s = new Score(sd.score, d.get("path"));
+            r.add(s);
+            
+        }
+//        String finalAnswer = answer + "\n" + score + "\n"; 
+        for(Score sc : r) {
+        	System.out.println(sc.getScore() + ": "+sc.getPath());
+        }
+    
+        
+		return r;
+    }
 	    private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception
 	    {
 	        //Create search query
