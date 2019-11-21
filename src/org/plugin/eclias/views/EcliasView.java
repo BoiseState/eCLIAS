@@ -3,13 +3,13 @@ package org.plugin.eclias.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.*;
 import org.plugin.eclias.corpus.MainCorpusGenerator;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile;
+import org.plugin.eclias.index.LuceneWriteIndexFromFile.Score;
 import org.plugin.eclias.preprocessor.MainCorpusPreprocessor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
@@ -19,10 +19,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.ui.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+
+import java.util.ArrayList;
 
 import javax.inject.Inject;
 
@@ -64,7 +67,7 @@ public class EcliasView extends ViewPart {
 	private StyledText queryText;
 	private StyledText queryText1;
 	private Shell shell;
-
+	private Table table;
 
 	//private MethodListWidget resultList;
 	private Label resultsLabel;
@@ -145,7 +148,7 @@ public class EcliasView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 //				startSearch();
 				try {
-					String s = LuceneWriteIndexFromFile.search(queryText.getText());
+					ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
 //					MainCorpusGenerator mcg = new MainCorpusGenerator();
 //					mcg.main(null);
 //					System.out.println("Corpus Generated");
@@ -153,9 +156,16 @@ public class EcliasView extends ViewPart {
 //					mcp.main(null);
 //					System.out.println("Preprocessing Generated");
 					
-//					String names = s.replaceAll(",", "");
-					MessageDialog.openInformation(shell, "Eclias", "Corpus Extracted and Indexed for the following projects:");
-					queryText1.setText(s);
+//					MessageDialog.openInformation(shell, "Eclias", "Corpus Extracted and Indexed for the following projects:");
+					
+					for(Score sc : s) {
+					      TableItem item = new TableItem(table, SWT.NONE);
+					      item.setText(0, sc.getScore()+"");
+					      item.setText(1, sc.getPath());
+					    }
+						
+//			        }
+//					queryText1.setText("hello");
 
 //					resultList.setText(s);
 					
@@ -175,7 +185,6 @@ public class EcliasView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				queryText.setText("");
-//				resultsLabel.setText("");
 				queryText1.setText("");
 			}
 		});
@@ -188,21 +197,22 @@ public class EcliasView extends ViewPart {
 		queryGridData.heightHint = 50;
 		queryText.setLayoutData(queryGridData);
 		queryText.setAlwaysShowScrollBars(false);
-		queryText.addVerifyKeyListener(new VerifyKeyListener() {
-
-			public void verifyKey(VerifyEvent event) {
-				if (event.keyCode == SWT.KEYPAD_CR || event.keyCode == SWT.CR) {
-					event.doit = false;
-					try {
-						LuceneWriteIndexFromFile.search(queryText.getText());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-//					startSearch();
-				}
-			}
-		});
+//		queryText.addVerifyKeyListener(new VerifyKeyListener() {
+//
+//			public void verifyKey(VerifyEvent event) {
+//				if (event.keyCode == SWT.KEYPAD_CR || event.keyCode == SWT.CR) {
+//					event.doit = false;
+////					try {
+////						LuceneWriteIndexFromFile.search(queryText.getText());
+////					} catch (Exception e) {
+////						// TODO Auto-generated catch block
+////						e.printStackTrace();
+////					}
+//					System.out.println("click me");
+////					startSearch();
+//				}
+//			}
+//		});
 
 		queryText.setText("");
 		
@@ -210,35 +220,55 @@ public class EcliasView extends ViewPart {
 		resultsLabel.setText("Results:");
 		resultsLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 			
-		queryText1 = new StyledText(parent, SWT.BORDER | SWT.MULTI
-				| SWT.V_SCROLL | SWT.WRAP);
-		queryText1.setEditable(false);
+//		queryText1 = new StyledText(parent, SWT.BORDER | SWT.MULTI
+//				| SWT.V_SCROLL | SWT.WRAP);
+//		queryText1.setEditable(false);
+//		GridData queryGridData1 = new GridData(SWT.FILL, SWT.BEGINNING, true,
+//				false);
+//		queryGridData1.heightHint = 100;
+//		queryText1.setLayoutData(queryGridData1);
+//		queryText1.setAlwaysShowScrollBars(false);
+//		queryText1.setDragDetect(true);
+////		queryText1.setDoubleClickEnabled(true);
+//		queryText1.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//		
+//				String selection = queryText1.getSelectionText();
+//				System.out.println(selection);
+////				queryText.setText(selection);
+//				messageBox.setText("Result selection");
+//				messageBox.setMessage(selection + "\n");
+//				messageBox.open();
+//
+//			}
+//			});
+		
+		 table = new Table(parent, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL
+		        | SWT.H_SCROLL);
+	    table.setLinesVisible(true);
+	    table.setHeaderVisible(true);
 		GridData queryGridData1 = new GridData(SWT.FILL, SWT.BEGINNING, true,
 				false);
 		queryGridData1.heightHint = 100;
-		queryText1.setLayoutData(queryGridData1);
-		queryText1.setAlwaysShowScrollBars(false);
-		queryText1.setDoubleClickEnabled(true);
-		queryText1.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-//					showMessage("You clicked me!");
-					System.out.println("you clicked me");
-					try {
-//						String s = LuceneWriteIndexFromFile.search(queryText.getText());
-						messageBox.open();
-						messageBox.setMessage("Path: set Property method Sets the value of buffer local property param name The property name param value The property value since Edit pre public void set Property String name Object value if value null properties remove name else Prop Value test properties get name if test null properties put name new Prop Value value false else if test value equals value do nothing else test value value test default Value false \n" );
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					
-			}
-			});
-			 
-//		resultList = new MethodListWidget(parent, SWT.H_SCROLL | SWT.V_SCROLL
-//				| SWT.BORDER, true);
-	
+		table.setLayoutData(queryGridData1);
+		
+//	    table.setBounds(250, 250, 220, 200);
+	    
+	    String[] titles = {"Score", "Path"};
+	    for (int i = 0; i < titles.length; i++) {
+	      TableColumn column = new TableColumn(table, SWT.NONE);
+	      column.setText(titles[i]);
+	    }
+
+	    
+
+	    for (int i=0; i<titles.length; i++) {
+	      table.getColumn (i).pack();
+	    }     
+	    
+//	    table.setSize(table.computeSize(SWT.DEFAULT, 500));
+	   
 	}
 
 

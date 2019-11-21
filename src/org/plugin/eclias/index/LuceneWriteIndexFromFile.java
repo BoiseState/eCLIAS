@@ -56,8 +56,11 @@ public class LuceneWriteIndexFromFile
 	static Analyzer analyzer;
 	private static IndexReader reader;
 	private static Query query;
+	private static String projectsname;
+	private static String indexPath;
 	
    public static class Score{
+	   
 		float score;
 		String path;
 		Score(float score, String path){
@@ -86,17 +89,17 @@ public class LuceneWriteIndexFromFile
 						for (IType type : unit.getAllTypes()) {
 							for (IMethod method : type.getMethods()) {
 								methodIDMap.put(
-										method.getHandleIdentifier(),
+										method.getHandleIdentifier(), //
 										method);
 							}
 						}
 					}
 				}
-				String projectsname = project.toString();
+				projectsname = project.toString();
 				System.out.println(projectsname);
 				File indexPath1 = new File("/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname);
 				indexPath1.mkdirs();
-				String indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
+				indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
 
 				// org.apache.lucene.store.Directory instance
 				Directory dir = FSDirectory.open(Paths.get(indexPath));
@@ -124,9 +127,12 @@ public class LuceneWriteIndexFromFile
 							monitor.beginTask("Building index",
 									methodIDMap.size());
 							int count = 0;
+							System.out.println();
 							for (String key : methodIDMap.keySet()) {
 								indexDoc(writer, methodIDMap.get(key));
-								//System.out.println("document is:" +methodIDMap.get(key));
+								
+								System.out.println("document is:" +methodIDMap.get(key));
+								
 								monitor.worked(1);
 								int check = writer.numDocs();
 								
@@ -180,6 +186,7 @@ public class LuceneWriteIndexFromFile
 				doc.add(new StringField("path", source, Field.Store.YES));
 				doc.add(new LongPoint("modified", lastModified));
 				doc.add(new TextField("contents", source, Store.YES));
+				
 				writer.addDocument(doc);
 
 			}
@@ -229,74 +236,8 @@ public class LuceneWriteIndexFromFile
 	
 	
 	
-	private static final String INDEX_DIR = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/P/jEdit4.3pre9";
+//	private static final String INDEX_DIR = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/P/jEdit4.3pre9";
 	
-	 
-//	    public static String search(String queryString) throws Exception
-//	    {
-//	    	
-//	        //Create lucene searcher. It search over a single IndexReader.
-//	        IndexSearcher searcher = createSearcher();
-//	         
-//	        //Search indexed contents using search term
-//	        TopDocs foundDocs = searchInContent(queryString, searcher);
-//	         
-//	        //Total found documents
-////	        System.out.println("Total Results :: " + foundDocs.totalHits);
-//	        
-//	        String answer = "Total Results :: " + foundDocs.totalHits;
-//	        
-//	        List<String> score = new ArrayList<String>();
-//	        //Let's print out the path of files which have searched term
-//	        for (ScoreDoc sd : foundDocs.scoreDocs)
-//	        {
-//	            Document d = searcher.doc(sd.doc);
-//	            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\n"; 
-//	            
-//	            score.add(finalscore);
-//	        }
-//	        String finalAnswer = answer + "\n" + score + "\n"; 
-//	        
-//			return finalAnswer;
-//	    }
-	     
-//    public static HashMap<Float, ArrayList<String>> search(String queryString) throws Exception
-//    {
-//    	HashMap<Float, ArrayList<String>> r = new HashMap<>();
-//    	
-//    	
-//        //Create lucene searcher. It search over a single IndexReader.
-//        IndexSearcher searcher = createSearcher();
-//         
-//        //Search indexed contents using search term
-//        TopDocs foundDocs = searchInContent(queryString, searcher);
-//         
-//        //Total found documents
-////        System.out.println("Total Results :: " + foundDocs.totalHits);
-//        
-//        String answer = "Total Results :: " + foundDocs.totalHits;
-//        
-//        List<String> score = new ArrayList<String>();
-//        //Let's print out the path of files which have searched term
-//        for (ScoreDoc sd : foundDocs.scoreDocs)
-//        {
-//            Document d = searcher.doc(sd.doc);
-//            float key = sd.score;
-//            if(!r.containsKey(key)) {
-//            	r.put(key, new ArrayList<String>());
-//            }
-//            r.get(key).add(d.get("path"));
-////            String finalscore = "Path : "+ d.get("path") + "\n Score : " + sd.score + "\n"; 
-//            
-////            score.add(finalscore);
-//        }
-////        String finalAnswer = answer + "\n" + score + "\n"; 
-//        for(Entry e : r.entrySet()) {
-//        	System.out.println("Score : "+e.getKey() +" ---> "+e.getValue());
-//        }
-//        
-//		return r;
-//    }
 	
 	public static ArrayList<Score> search(String queryString) throws Exception
     {
@@ -314,7 +255,6 @@ public class LuceneWriteIndexFromFile
         
         String answer = "Total Results :: " + foundDocs.totalHits;
         
-//        List<String> score = new ArrayList<String>();
         //Let's print out the path of files which have searched term
         for (ScoreDoc sd : foundDocs.scoreDocs)
         {
@@ -323,12 +263,11 @@ public class LuceneWriteIndexFromFile
             r.add(s);
             
         }
-//        String finalAnswer = answer + "\n" + score + "\n"; 
-        for(Score sc : r) {
-        	System.out.println(sc.getScore() + ": "+sc.getPath());
-        }
-    
-        
+//        for(Score sc : r) {
+//        	System.out.println(sc.getScore() + ": "+sc.getPath());
+//        }
+//    
+//        
 		return r;
     }
 	    private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception
@@ -345,7 +284,7 @@ public class LuceneWriteIndexFromFile
 	    private static IndexSearcher createSearcher() throws IOException
 	    {
 	    	
-	        Directory dir = FSDirectory.open(Paths.get(INDEX_DIR));
+	        Directory dir = FSDirectory.open(Paths.get(indexPath));
 	         
 	        //It is an interface for accessing a point-in-time view of a lucene index
 	        IndexReader reader = DirectoryReader.open(dir);
