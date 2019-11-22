@@ -3,6 +3,7 @@ package org.plugin.eclias.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -24,7 +25,19 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.ui.ide.IDE;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMethod;
+import org.plugin.eclias.views.RevealInEditorAction;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
@@ -73,6 +86,7 @@ public class EcliasView extends ViewPart {
 	private Label resultsLabel;
 	private MethodListWidget resultList;
 	private MessageBox messageBox;
+	private TableItem item;
 	 
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -160,12 +174,27 @@ public class EcliasView extends ViewPart {
 //					MessageDialog.openInformation(shell, "Eclias", "Corpus Extracted and Indexed for the following projects:");
 					
 					for(Score sc : s) {
-					      TableItem item = new TableItem(table, SWT.NONE);
-					      item.setText(0, sc.getScore()+"");
-					      item.setText(1, sc.getMethod()+"");
-					    }
-						
-//			        }
+						  item = new TableItem(table, SWT.NONE);
+						  item.setText(3, sc.getPackageName()+"");
+						  item.setText(1, sc.getMethodName()+"");
+					      item.setText(2, sc.getScore()+"");
+					      item.setText(0, sc.getMethod1()+"");
+					}
+					
+					table.addSelectionListener(new SelectionAdapter() {
+					      public void widgetSelected(SelectionEvent e) {
+					    	  String[] tableclicked = e.item.toString().split("\\{");
+					    	  String[] clicked = tableclicked[1].split("\\}");
+//					    	  String pathname = clicked[0];
+					          System.out.println(clicked[0]);
+					          showMessage("Go to this method:\n" +clicked[0]);
+					          setFocus();
+					          
+//					          (new RevealInEditorAction(sc.getMethod1())).run();
+							   
+					      }
+					    });
+//				}
 //					queryText1.setText("hello");
 
 //					resultList.setText(s);
@@ -186,7 +215,7 @@ public class EcliasView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				queryText.setText("");
-				queryText1.setText("");
+				table.removeAll();
 			}
 		});
 
@@ -198,54 +227,15 @@ public class EcliasView extends ViewPart {
 		queryGridData.heightHint = 50;
 		queryText.setLayoutData(queryGridData);
 		queryText.setAlwaysShowScrollBars(false);
-//		queryText.addVerifyKeyListener(new VerifyKeyListener() {
-//
-//			public void verifyKey(VerifyEvent event) {
-//				if (event.keyCode == SWT.KEYPAD_CR || event.keyCode == SWT.CR) {
-//					event.doit = false;
-////					try {
-////						LuceneWriteIndexFromFile.search(queryText.getText());
-////					} catch (Exception e) {
-////						// TODO Auto-generated catch block
-////						e.printStackTrace();
-////					}
-//					System.out.println("click me");
-////					startSearch();
-//				}
-//			}
-//		});
 
 		queryText.setText("");
 		
 		resultsLabel = new Label(parent, SWT.PUSH);
 		resultsLabel.setText("Results:");
 		resultsLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			
-//		queryText1 = new StyledText(parent, SWT.BORDER | SWT.MULTI
-//				| SWT.V_SCROLL | SWT.WRAP);
-//		queryText1.setEditable(false);
-//		GridData queryGridData1 = new GridData(SWT.FILL, SWT.BEGINNING, true,
-//				false);
-//		queryGridData1.heightHint = 100;
-//		queryText1.setLayoutData(queryGridData1);
-//		queryText1.setAlwaysShowScrollBars(false);
-//		queryText1.setDragDetect(true);
-////		queryText1.setDoubleClickEnabled(true);
-//		queryText1.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//		
-//				String selection = queryText1.getSelectionText();
-//				System.out.println(selection);
-////				queryText.setText(selection);
-//				messageBox.setText("Result selection");
-//				messageBox.setMessage(selection + "\n");
-//				messageBox.open();
-//
-//			}
-//			});
 		
-		 table = new Table(parent, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL
+		
+		table = new Table(parent, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL
 		        | SWT.H_SCROLL);
 	    table.setLinesVisible(true);
 	    table.setHeaderVisible(true);
@@ -256,19 +246,19 @@ public class EcliasView extends ViewPart {
 		
 //	    table.setBounds(250, 250, 220, 200);
 	    
-	    String[] titles = {"Score", "Method, Class, Package"};
+	    String[] titles = {"Method Name", "Score", "Package Name", "Full Path"};
 	    for (int i = 0; i < titles.length; i++) {
 	      TableColumn column = new TableColumn(table, SWT.NONE);
 	      column.setText(titles[i]);
 	    }
-
 	    
-
 	    for (int i=0; i<titles.length; i++) {
 	      table.getColumn (i).pack();
-	    }     
+	    }
 	    
-//	    table.setSize(table.computeSize(SWT.DEFAULT, 500));
+	    table.setSize(table.computeSize(SWT.DEFAULT, 200));
+	    
+	    
 	   
 	}
 

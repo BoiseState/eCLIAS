@@ -2,7 +2,7 @@ package org.plugin.eclias.index;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
+//import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,10 +63,16 @@ public class LuceneWriteIndexFromFile
 	   
 		float score;
 		IMethod method;
+		String packageName; 
+		String methodName;
+		IMethod method1;
 		
-		Score(float score, IMethod method){
+		Score(float score, IMethod method, String packageName, String methodName, IMethod method1){
 			this.score = score;
 			this.method = method;
+			this.packageName = packageName; 
+			this.methodName = methodName;
+			this.method1 = method1; 
 		}
 		
 		public float getScore(){
@@ -77,6 +83,18 @@ public class LuceneWriteIndexFromFile
 			return method;
 		}
 		
+		public String getPackageName() {
+			return packageName;
+		}
+		
+		public String getMethodName() {
+			return methodName;
+		}
+		
+		public IMethod getMethod1() {
+
+			return method1;
+		}
 	}
 
 	public static void index() throws Exception
@@ -282,7 +300,7 @@ public class LuceneWriteIndexFromFile
         for (int i = 0; i < reader.numDocs(); i++) {
 			String methodID = reader.document(i).get(
 					"nodeHandlerID");
-			System.out.println("methodID is" +methodID);
+//			System.out.println("methodID is" +methodID);
 			
 //			if (methodID == null
 //					|| methodMap.containsKey(methodID))
@@ -290,7 +308,7 @@ public class LuceneWriteIndexFromFile
 //			System.out.println("methodIDMAP coming here null or not?" +methodIDMap);
 			if (methodIDMap.containsKey(methodID)) {
 				IMethod method = methodIDMap.get(methodID);
-				System.out.println("methodIDMAP" +methodID);
+//				System.out.println("methodIDMAP" +methodID);
 				methodMap.put(methodID, method);
 //				System.out.println("methodMap put working?" +methodMap);
 			}
@@ -315,24 +333,36 @@ public class LuceneWriteIndexFromFile
         {	
         	Document doc = searcher.doc(sd.doc);
         	Float similarity = normalize(sd.score);
-//        	System.out.println("methodMap before doc get nodeHandlerID:" + methodMap);
-            IMethod member = methodMap.get(doc.get("nodeHandlerID"));
             
-//            Method method1 = getMethod((IMethod) member);
-
-            Score s = new Score(similarity, member);
+        	IMethod member = methodMap.get(doc.get("nodeHandlerID"));
+        
+        	String member1 = member.getKey();
+        	String[] parts = member1.split(";");
+        	String part1 = parts[0];
+        	String packageName  = part1.substring(1);
+        	
+        	String[] classnamearray = packageName.split("/");
+        	String className = classnamearray[classnamearray.length-1];
+        	System.out.println(className);
+//           Method method1 = Method.getMethod((IMethod) member);	
+            
+            String nameMethod = member.toString();
+            String[] methodSplit = nameMethod.split("\\(");
+            String methodSplitName = methodSplit[0];
+        	
+            String methodName  = methodSplitName.substring(0);
+        	
+//          IMethod method1 = methodMap.get(doc.get("path"));
+            
+            Score s = new Score(similarity, member, packageName, className, member);
             
             searchResults.add(s);
             
-        }
-//        for(Score sc : r) {
-//        	System.out.println(sc.getScore() + ": "+sc.getPath());
-//        }
-//    
-//    
+        }  
 		
 		return searchResults;
     }
+	
 	    private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception
 	    {
 	        //Create search query
@@ -344,46 +374,10 @@ public class LuceneWriteIndexFromFile
 	        TopDocs hits = searcher.search(query, Integer.MAX_VALUE);
 	        return hits;
 	    }
-	 
-//	    private static IndexSearcher createSearcher() throws IOException
-//	    {
-//	    	
-//	    	methodMap = new HashMap<String, IMethod>();
-//			
-//	        Directory dir = FSDirectory.open(Paths.get(INDEX_DIR));
-//	         
-//	        //It is an interface for accessing a point-in-time view of a lucene index
-//	        IndexReader reader = DirectoryReader.open(dir);
-//	        
-//	        for (int i = 0; i < reader.numDocs(); i++) {
-//				String methodID = reader.document(i).get(
-//						"nodeHandlerID");
-//				if (methodID == null
-//						|| methodMap.containsKey(methodID))
-//					continue;
-//				if (methodIDMap.containsKey(methodID)) {
-//					IMethod method = methodIDMap.get(methodID);
-//					methodMap.put(methodID, method);
-//				}
-//			}
-//	         
-//	        //Index searcher
-//	        IndexSearcher searcher = new IndexSearcher(reader);
-//	        
-//	        return searcher;
-//	    }
 	    
 	    public static Query getQuery() {
 			return query;
 		}
-	    
-//	    private static Method getMethod(IMethod iMethod) {
-//			if (!methods.containsKey(iMethod)) {
-//				
-//				methods.put(iMethod, new Method(iMethod) );
-//			}
-//			return methods.get(iMethod);
-//		}
 	    
 	    private static Float normalize(float score) {
 	 			return (float) (1.0 - Math.pow(1.0 / (1.0 + 0.2 * score), 5));
