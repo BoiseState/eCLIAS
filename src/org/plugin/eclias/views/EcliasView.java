@@ -174,43 +174,49 @@ public class EcliasView extends ViewPart {
 						item.setText(2, sc.getScore() + "");
 						item.setText(3, sc.getPackageName() + "");
 						item.setText(4, sc.getMethod() + "");
-						
+					}
 						table.addSelectionListener(new SelectionAdapter() {
 							
 							public void widgetSelected(SelectionEvent e) {
 								
-								System.out.println("edata"+e.item);
-								
-								
 								String[] tableclicked = e.item.toString().split("\\{");
 								String[] clicked = tableclicked[1].split("\\}");
-								String pathname = clicked[0];
-//								System.out.println(clicked[0]);
-//								System.out.println("pathname = " + pathname);
-//						          setFocus();
+								String  pathname= clicked[0];
+								System.out.println(clicked[0]);
+								System.out.println("pathname = " + pathname);
+								setFocus();
 								
-//								try {
-//										String methodname = sc.getMethodName();
-//										System.out.println("methodname = " + pathname);
-//										System.out.println("methodname = " + methodname);
-//										while(pathname != methodname) {
-//											System.out.println("methodname inside coming? ");
-//											(new RevealInEditorAction(sc.getMethod())).run();
+								try {
+									ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
+									for(Score sc: s) {
+										String methodname = sc.getMethodName();
+										System.out.println("methodname = " + pathname);
+										System.out.println("methodname = " + methodname);
+										if(pathname.equals(methodname)) {
+											System.out.println("methodname inside coming? ");
+											(new RevealInEditorAction(sc.getMethod())).run();
+//											return;
 //											break;
-//										}
-//										
-//										System.out.println("its not breaking");
-//									}
-//
-//								catch (Exception e1) {
-//									// TODO Auto-generated catch block
-//									e1.printStackTrace();
-//								}
+										}
+										else {
+											continue;
+										}
+										System.out.println("its not breaking");
+										
+										
+										
+								}
+
+								}
+								catch (Exception e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
 
 							}
 							
 						});
-					}
+//					}
 					
 //				}
 //					queryText1.setText("hello");
