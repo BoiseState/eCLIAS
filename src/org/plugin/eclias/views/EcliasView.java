@@ -169,11 +169,10 @@ public class EcliasView extends ViewPart {
 
 					for (Score sc : s) {
 						item = new TableItem(table, SWT.NONE);
-						item.setText(0, sc.getMethodName() + "");
-						item.setText(1, sc.getClassName() + "");
+						item.setText(0, sc.getClassName() + "");
+						item.setText(1, sc.getMethodName() + "");
 						item.setText(2, sc.getScore() + "");
 						item.setText(3, sc.getPackageName() + "");
-						item.setText(4, sc.getMethod() + "");
 					}
 						table.addSelectionListener(new SelectionAdapter() {
 							
@@ -182,28 +181,22 @@ public class EcliasView extends ViewPart {
 								String[] tableclicked = e.item.toString().split("\\{");
 								String[] clicked = tableclicked[1].split("\\}");
 								String  pathname= clicked[0];
-								System.out.println(clicked[0]);
-								System.out.println("pathname = " + pathname);
 								setFocus();
 								
 								try {
 									ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
 									for(Score sc: s) {
-										String methodname = sc.getMethodName();
-										System.out.println("methodname = " + pathname);
-										System.out.println("methodname = " + methodname);
-										if(pathname.equals(methodname)) {
+										String classname = sc.getClassName();
+//										System.out.println("pathname = " + pathname);
+//										System.out.println("classname = " + classname);
+										if(pathname.equals(classname)) {
 											System.out.println("methodname inside coming? ");
 											(new RevealInEditorAction(sc.getMethod())).run();
-//											return;
-//											break;
 										}
 										else {
 											continue;
 										}
 										System.out.println("its not breaking");
-										
-										
 										
 								}
 
@@ -264,7 +257,7 @@ public class EcliasView extends ViewPart {
 
 //	    table.setBounds(250, 250, 220, 200);
 
-		String[] titles = { "Method Name", "Class Name", "Score", "Package Name", "Full Path" };
+		String[] titles = { "Class Name", "Method Name", "Score", "Package Name"};
 		for (int i = 0; i < titles.length; i++) {
 			TableColumn column = new TableColumn(table, SWT.NONE);
 			column.setText(titles[i]);

@@ -57,6 +57,7 @@ public class LuceneWriteIndexFromFile {
 	private static Query query;
 	private static String projectsname;
 	private static String indexPath = "";
+	private static String newmethodname ;
 
 	public static class Score {
 
@@ -326,14 +327,22 @@ public class LuceneWriteIndexFromFile {
 //           Method method1 = Method.getMethod((IMethod) member);	
 
 			String nameMethod = member.toString();
-			String[] methodSplit = nameMethod.split("\\(");
+			String[] methodSplit = nameMethod.split("\\[");
 			String methodSplitName = methodSplit[0];
 
 			String methodName = methodSplitName.substring(0);
-
+		
+			
+			if(methodName.contains(")")) {
+				newmethodname = methodName;
+			}
+			else {
+				newmethodname = methodName.concat(")");
+			}
+			
 //          IMethod method1 = methodMap.get(doc.get("path"));
 
-			Score s = new Score(similarity, member, packageName, methodName, className, member);
+			Score s = new Score(similarity, member, packageName, newmethodname, className, member);
 
 			searchResults.add(s);
 
