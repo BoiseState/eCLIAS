@@ -67,7 +67,7 @@
                id="org.plugin.eclias.toolbars.sampleToolbar">
             <command
                   commandId="org.plugin.eclias.commands.sampleCommand1"
-                  icon="icons/messi.png"
+                  icon="icons/eclias.png"
                   tooltip="Starting to extract the corpus"
                   id="org.plugin.eclias.toolbars.sampleCommand1">
             </command>
@@ -90,11 +90,36 @@
       </view>
    </extension>
    <extension
+         point="org.eclipse.ui.views">
+          <category
+            id="org.plugin.eclias"
+            name="Eclias Tool">
+      </category>
+      <view
+            category="org.plugin.eclias"
+            class="org.plugin.eclias.views.EcliasView"
+            icon="icons/eclias.png"
+            id="org.plugin.eclias.views.EcliasView"
+            inject="true"
+            name="Eclias Tool">
+      </view>
+   </extension>
+         
+   <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="org.eclipse.jdt.ui.JavaPerspective">
          <view
                id="org.plugin.eclias.views.SampleView"
+               ratio="0.5"
+               relationship="right"
+               relative="org.eclipse.ui.views.ProblemView">
+         </view>
+      </perspectiveExtension>
+       <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               id="org.plugin.eclias.views.EcliasView"
                ratio="0.5"
                relationship="right"
                relative="org.eclipse.ui.views.ProblemView">

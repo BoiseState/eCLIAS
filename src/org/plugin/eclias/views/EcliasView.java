@@ -2,10 +2,7 @@ package org.plugin.eclias.views;
 
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.*;
 import org.plugin.eclias.corpus.MainCorpusGenerator;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile;
@@ -24,19 +21,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.ui.ide.IDE;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IMethod;
 import org.plugin.eclias.views.RevealInEditorAction;
+import java.nio.file.Paths;
 
-import java.awt.Desktop;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
@@ -75,14 +62,9 @@ public class EcliasView extends ViewPart {
 	private Button searchButton;
 	private Button clearButton;
 	private StyledText queryText;
-	private StyledText queryText1;
-	private Shell shell;
 	private Table table;
 
-	// private MethodListWidget resultList;
 	private Label resultsLabel;
-	private MethodListWidget resultList;
-	private MessageBox messageBox;
 	private TableItem item;
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -102,8 +84,6 @@ public class EcliasView extends ViewPart {
 		}
 	}
 
-//	class NameSorter extends ViewerSorter {
-//	}
 
 	/**
 	 * The constructor.
@@ -124,12 +104,12 @@ public class EcliasView extends ViewPart {
 		// Create the help context id for the viewer's control
 		workbench.getHelpSystem().setHelp(viewer.getControl(), "org.plugin.eclias.viewer");
 		getSite().setSelectionProvider(viewer);
+		
 //		makeActions();
 //		hookContextMenu();
 //		hookDoubleClickAction();
 //		contributeToActionBars();
-		shell = new Shell();
-		messageBox = new MessageBox(shell);
+		
 
 		GridLayout gridLayout = new GridLayout();
 		gridLayout.numColumns = 1;
@@ -177,20 +157,18 @@ public class EcliasView extends ViewPart {
 						table.addSelectionListener(new SelectionAdapter() {
 							
 							public void widgetSelected(SelectionEvent e) {
-								
-								String[] tableclicked = e.item.toString().split("\\{");
-								String[] clicked = tableclicked[1].split("\\}");
-								String  pathname= clicked[0];
+						        
+								String classname = ((TableItem) e.item).getText(0); 
+								String methodname = ((TableItem) e.item).getText(1); 
 								setFocus();
 								
 								try {
 									ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
 									for(Score sc: s) {
-										String classname = sc.getClassName();
-//										System.out.println("pathname = " + pathname);
-//										System.out.println("classname = " + classname);
-										if(pathname.equals(classname)) {
+
+										if(classname.equals(sc.getClassName()) && methodname.equals(sc.getMethodName())) {
 											System.out.println("methodname inside coming? ");
+											System.out.println(Paths.get("").toAbsolutePath().toString());
 											(new RevealInEditorAction(sc.getMethod())).run();
 										}
 										else {
@@ -209,12 +187,6 @@ public class EcliasView extends ViewPart {
 							}
 							
 						});
-//					}
-					
-//				}
-//					queryText1.setText("hello");
-
-//					resultList.setText(s);
 
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
@@ -254,8 +226,7 @@ public class EcliasView extends ViewPart {
 		GridData queryGridData1 = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		queryGridData1.heightHint = 100;
 		table.setLayoutData(queryGridData1);
-
-//	    table.setBounds(250, 250, 220, 200);
+		
 
 		String[] titles = { "Class Name", "Method Name", "Score", "Package Name"};
 		for (int i = 0; i < titles.length; i++) {

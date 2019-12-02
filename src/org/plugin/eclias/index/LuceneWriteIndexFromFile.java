@@ -2,7 +2,6 @@ package org.plugin.eclias.index;
 
 import java.io.File;
 import java.io.IOException;
-//import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -129,7 +128,6 @@ public class LuceneWriteIndexFromFile {
 				newDirectory.mkdirs();
 
 				// Path of indexed files
-				System.out.println("assigning index path");
 				indexPath += "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
 
 				// analyzer with the default stop words
@@ -162,29 +160,13 @@ public class LuceneWriteIndexFromFile {
 
 							monitor.beginTask("Building index", methodIDMap.size());
 
-//							int count = 0;
-
-//							System.out.println("methodIDMap: KeySet = " +methodIDMap.keySet()); //trying to print out what's the value
-
 							for (String key : methodIDMap.keySet()) {
 								indexDoc(writer, methodIDMap.get(key));
-								monitor.worked(1);
-//								System.out.println("document is:" +methodIDMap.get(key));								
+								monitor.worked(1);								
 							}
-//								int check = writer.numDocs();
-
-//								while(count<=check) {
-//									count ++;
-//										 }	
-//							}
+							
 							monitor.done();
 							writer.close();
-
-//							
-//							System.out.println("Count is:" +count);
-//							// print all info about writer
-//							System.out.println("writer is:" +writer.toString());
-//							System.out.println("Monitor is:" +monitor.toString());
 
 //							Terms terms = null;
 //							int doccount = terms.getDocCount();
@@ -215,7 +197,6 @@ public class LuceneWriteIndexFromFile {
 		try {
 			method.getOpenable().open(new NullProgressMonitor());
 			source = method.getSource();
-//			System.out.println("source is:"+source);
 			if (source != null) {
 				source = IRUtil.splitAndMergeCamelCase(source);
 
@@ -270,11 +251,8 @@ public class LuceneWriteIndexFromFile {
 		ArrayList<Score> searchResults = new ArrayList<>();
 
 		// Create lucene searcher. It search over a single IndexReader.
-//        IndexSearcher searcher = createSearcher();
-
 		methodMap = new HashMap<String, IMethod>();
 
-		System.out.println("indexPath:" + indexPath);
 		Directory dir = FSDirectory.open(Paths.get(indexPath));
 
 		// It is an interface for accessing a point-in-time view of a lucene index
@@ -282,17 +260,9 @@ public class LuceneWriteIndexFromFile {
 
 		for (int i = 0; i < reader.numDocs(); i++) {
 			String methodID = reader.document(i).get("nodeHandlerID");
-//			System.out.println("methodID is" +methodID);
-
-//			if (methodID == null
-//					|| methodMap.containsKey(methodID))
-//				continue;
-//			System.out.println("methodIDMAP coming here null or not?" +methodIDMap);
 			if (methodIDMap.containsKey(methodID)) {
 				IMethod method = methodIDMap.get(methodID);
-//				System.out.println("methodIDMAP" +methodID);
 				methodMap.put(methodID, method);
-//				System.out.println("methodMap put working?" +methodMap);
 			}
 
 		}
@@ -305,8 +275,6 @@ public class LuceneWriteIndexFromFile {
 
 		// Total found documents
 		System.out.println("Total Results :: " + foundDocs.totalHits);
-
-//        String answer = "Total Results :: " + foundDocs.totalHits;
 
 		// Let's print out the path of files which have searched term
 
@@ -323,8 +291,6 @@ public class LuceneWriteIndexFromFile {
 
 			String[] classnamearray = packageName.split("/");
 			String className = classnamearray[classnamearray.length - 1];
-			System.out.println(className);
-//           Method method1 = Method.getMethod((IMethod) member);	
 
 			String nameMethod = member.toString();
 			String[] methodSplit = nameMethod.split("\\[");
@@ -340,7 +306,6 @@ public class LuceneWriteIndexFromFile {
 				newmethodname = methodName.concat(")");
 			}
 			
-//          IMethod method1 = methodMap.get(doc.get("path"));
 
 			Score s = new Score(similarity, member, packageName, newmethodname, className, member);
 
@@ -352,6 +317,7 @@ public class LuceneWriteIndexFromFile {
 	}
 
 	private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception {
+		
 		// Create search query
 		QueryParser qp = new QueryParser("contents", new StandardAnalyzer());
 		textToFind = IRUtil.splitAndMergeCamelCase(textToFind);

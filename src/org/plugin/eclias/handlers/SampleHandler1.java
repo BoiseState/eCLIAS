@@ -48,7 +48,7 @@ public class SampleHandler1 extends AbstractHandler {
 //			mcp.main(null);
 //			System.out.println("Preprocessing Generated");
 			LuceneWriteIndexFromFile Li = new LuceneWriteIndexFromFile();
-			Li.main(null);
+			Li.index();
 			Li.search("Hello world");
 			System.out.println("Working");
 
