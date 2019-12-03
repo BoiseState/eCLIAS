@@ -3,6 +3,7 @@ package org.plugin.eclias.index;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -280,14 +281,19 @@ public class LuceneWriteIndexFromFile {
 
 		for (ScoreDoc sd : foundDocs.scoreDocs) {
 			Document doc = searcher.doc(sd.doc);
+			
 			Float similarity = normalize(sd.score);
+			DecimalFormat df = new DecimalFormat("0.00");
+			
+			System.out.println("score in two decimals : " + df.format(similarity));  
 
 			IMethod member = methodMap.get(doc.get("nodeHandlerID"));
 
 			String member1 = member.getKey();
 			String[] parts = member1.split(";");
 			String part1 = parts[0];
-			String packageName = part1.substring(1);
+			String packageName = part1.substring(1).replace('/','.');
+			
 
 			String[] classnamearray = packageName.split("/");
 			String className = classnamearray[classnamearray.length - 1];
