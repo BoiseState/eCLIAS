@@ -56,7 +56,7 @@ public class LuceneWriteIndexFromFile {
 	private static IndexReader reader;
 	private static Query query;
 	private static String projectsname;
-	private static String indexPath = "";
+	private static String indexPath;
 	private static String newmethodname ;
 
 	public static class Score {
@@ -103,6 +103,7 @@ public class LuceneWriteIndexFromFile {
 	}
 
 	public static void index() throws Exception {
+		System.out.println("inside index function before job");
 		IWorkspace root = ResourcesPlugin.getWorkspace();
 		IProject[] allProjects = root.getRoot().getProjects();
 
@@ -129,7 +130,7 @@ public class LuceneWriteIndexFromFile {
 				newDirectory.mkdirs();
 
 				// Path of indexed files
-				indexPath += "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
+				indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
 
 				// analyzer with the default stop words
 //				Analyzer analyzer = new StandardAnalyzer();
@@ -146,10 +147,10 @@ public class LuceneWriteIndexFromFile {
 
 						IndexWriter writer;
 						try {
-
+							System.out.println("indexing in JOB");
 							// org.apache.lucene.store.Directory instance
 							Directory dir = FSDirectory.open(Paths.get(indexPath));
-
+							
 							// IndexWriter Configuration
 							IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer());
 							iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -178,7 +179,6 @@ public class LuceneWriteIndexFromFile {
 							e.printStackTrace();
 						}
 						return Status.OK_STATUS;
-
 					}
 				};
 				job.setPriority(Job.LONG);
@@ -188,7 +188,9 @@ public class LuceneWriteIndexFromFile {
 			} else {
 				System.out.println("error - It's not a project");
 			}
+			
 		}
+		
 	}
 
 	static void indexDoc(IndexWriter writer, IMethod method) {
@@ -248,6 +250,7 @@ public class LuceneWriteIndexFromFile {
 	}
 
 	public static ArrayList<Score> search(String queryString) throws Exception {
+		System.out.println("inside search function");
 
 		ArrayList<Score> searchResults = new ArrayList<>();
 
