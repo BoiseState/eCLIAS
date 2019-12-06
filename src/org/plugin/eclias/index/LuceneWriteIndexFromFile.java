@@ -56,19 +56,19 @@ public class LuceneWriteIndexFromFile {
 	private static IndexReader reader;
 	private static Query query;
 	private static String projectsname;
-	private static String indexPath;
-	private static String newmethodname ;
+	private static String indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/"; // Path of indexed files
+	private static String newmethodname;
 
 	public static class Score {
 
-		float score;
+		String score;
 		IMethod method;
 		String packageName;
 		String methodName;
 		static IMethod ideEditor;
 		String className;
 
-		Score(float score, IMethod method, String packageName, String methodName, String className, IMethod ideEditor) {
+		Score(String score, IMethod method, String packageName, String methodName, String className, IMethod ideEditor) {
 			this.score = score;
 			this.method = method;
 			this.packageName = packageName;
@@ -77,7 +77,7 @@ public class LuceneWriteIndexFromFile {
 			this.ideEditor = ideEditor;
 		}
 
-		public float getScore() {
+		public String getScore() {
 			return score;
 		}
 
@@ -103,7 +103,11 @@ public class LuceneWriteIndexFromFile {
 	}
 
 	public static void index() throws Exception {
-		System.out.println("inside index function before job");
+
+		// Creating a new directory to store indexed files
+		File newDirectory = new File(indexPath);
+		newDirectory.mkdirs();
+
 		IWorkspace root = ResourcesPlugin.getWorkspace();
 		IProject[] allProjects = root.getRoot().getProjects();
 
@@ -114,8 +118,7 @@ public class LuceneWriteIndexFromFile {
 					for (ICompilationUnit unit : frag.getCompilationUnits()) {
 						for (IType type : unit.getAllTypes()) {
 							for (IMethod method : type.getMethods()) {
-								methodIDMap.put(method.getHandleIdentifier(), //
-										method);
+								methodIDMap.put(method.getHandleIdentifier(), method);
 							}
 						}
 					}
@@ -124,73 +127,63 @@ public class LuceneWriteIndexFromFile {
 				// List the projects in the explorer tab
 				projectsname = project.toString();
 				System.out.println(projectsname);
+			} else {
+				System.out.println("error - It's not a project");
+			}
+		}
 
-				// Creating a new directory to store indexed files
-				File newDirectory = new File("/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname);
-				newDirectory.mkdirs();
+		
+//		Analyzer analyzer = new StandardAnalyzer(); // analyzer with the default stop words
+		   
 
-				// Path of indexed files
-				indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/Example/" + projectsname;
+		Job job = new Job("Lucene Indexing") {
 
-				// analyzer with the default stop words
-//				Analyzer analyzer = new StandardAnalyzer();
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
 
-				// IndexWriter writes new index files to the directory
-				// IndexWriter writer = new IndexWriter(dir, iwc);
-				// Its recursive method to iterate all files and directories
-				// indexDocs(writer, docDir);
+				IndexWriter writer;
+				try {
+					System.out.println("indexing in JOB");
+					// org.apache.lucene.store.Directory instance
+					Directory dir = FSDirectory.open(Paths.get(indexPath));
 
-				Job job = new Job("Lucene Indexing") {
+					// IndexWriter Configuration
+					IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer());
+					iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
-					@Override
-					protected IStatus run(IProgressMonitor monitor) {
+					// IndexWriter writes new index files to the directory
+					writer = new IndexWriter(dir, iwc);
 
-						IndexWriter writer;
-						try {
-							System.out.println("indexing in JOB");
-							// org.apache.lucene.store.Directory instance
-							Directory dir = FSDirectory.open(Paths.get(indexPath));
-							
-							// IndexWriter Configuration
-							IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer());
-							iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
+					writer.deleteAll();
 
-							// IndexWriter writes new index files to the directory
-							writer = new IndexWriter(dir, iwc);
+					monitor.beginTask("Building index", methodIDMap.size());
 
-							writer.deleteAll();
+					for (String key : methodIDMap.keySet()) {
+						indexDoc(writer, methodIDMap.get(key));
+						monitor.worked(1);
+					}
 
-							monitor.beginTask("Building index", methodIDMap.size());
-
-							for (String key : methodIDMap.keySet()) {
-								indexDoc(writer, methodIDMap.get(key));
-								monitor.worked(1);								
-							}
-							
-							monitor.done();
-							writer.close();
+					monitor.done();
+					writer.close();
 
 //							Terms terms = null;
 //							int doccount = terms.getDocCount();
 //							System.out.println(doccount);
 
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						return Status.OK_STATUS;
-					}
-				};
-				job.setPriority(Job.LONG);
-				job.setUser(true);
-				job.schedule();
-
-			} else {
-				System.out.println("error - It's not a project");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return Status.OK_STATUS;
 			}
-			
+		};
+		job.setPriority(Job.LONG);
+		job.setUser(true);
+		job.schedule();
+
+		while (job.getState() != Job.NONE) {
 		}
-		
+
 	}
 
 	static void indexDoc(IndexWriter writer, IMethod method) {
@@ -284,21 +277,21 @@ public class LuceneWriteIndexFromFile {
 
 		for (ScoreDoc sd : foundDocs.scoreDocs) {
 			Document doc = searcher.doc(sd.doc);
-			
+
 			Float similarity = normalize(sd.score);
-			DecimalFormat df = new DecimalFormat("0.00");
+			DecimalFormat df = new DecimalFormat("0.000000");
+			String scoreValue = df.format(similarity);
 			
-			System.out.println("score in two decimals : " + df.format(similarity));  
+			System.out.println("score in two decimals : " + df.format(similarity));
 
 			IMethod member = methodMap.get(doc.get("nodeHandlerID"));
 
 			String member1 = member.getKey();
 			String[] parts = member1.split(";");
 			String part1 = parts[0];
-			String packageName = part1.substring(1).replace('/','.');
-			
+			String packageName = part1.substring(1).replace('/', '.');
 
-			String[] classnamearray = packageName.split("/");
+			String[] classnamearray = part1.substring(1).split("/");
 			String className = classnamearray[classnamearray.length - 1];
 
 			String nameMethod = member.toString();
@@ -306,17 +299,14 @@ public class LuceneWriteIndexFromFile {
 			String methodSplitName = methodSplit[0];
 
 			String methodName = methodSplitName.substring(0);
-		
-			
-			if(methodName.contains(")")) {
+
+			if (methodName.contains(")")) {
 				newmethodname = methodName;
-			}
-			else {
+			} else {
 				newmethodname = methodName.concat(")");
 			}
-			
 
-			Score s = new Score(similarity, member, packageName, newmethodname, className, member);
+			Score s = new Score(scoreValue, member, packageName, newmethodname, className, member);
 
 			searchResults.add(s);
 
@@ -326,7 +316,7 @@ public class LuceneWriteIndexFromFile {
 	}
 
 	private static TopDocs searchInContent(String textToFind, IndexSearcher searcher) throws Exception {
-		
+
 		// Create search query
 		QueryParser qp = new QueryParser("contents", new StandardAnalyzer());
 		textToFind = IRUtil.splitAndMergeCamelCase(textToFind);
