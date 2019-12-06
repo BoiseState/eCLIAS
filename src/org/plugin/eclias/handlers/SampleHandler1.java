@@ -41,16 +41,16 @@ public class SampleHandler1 extends AbstractHandler {
 		// Get all projects in the workspace
 		IProject[] projects = root.getProjects();
 		try {
-//			MainCorpusGenerator mcg = new MainCorpusGenerator();
-//			mcg.main(null);
-//			System.out.println("Corpus Generated");
-//			MainCorpusPreprocessor mcp = new MainCorpusPreprocessor();
-//			mcp.main(null);
-//			System.out.println("Preprocessing Generated");
-			LuceneWriteIndexFromFile Li = new LuceneWriteIndexFromFile();
-			Li.index();
-			Li.search("Hello world");
-			System.out.println("Working");
+			MainCorpusGenerator mcg = new MainCorpusGenerator();
+			mcg.main(null);
+			System.out.println("Corpus Generated");
+			MainCorpusPreprocessor mcp = new MainCorpusPreprocessor();
+			mcp.main(null);
+			System.out.println("Preprocessing Generated");
+//			LuceneWriteIndexFromFile Li = new LuceneWriteIndexFromFile();
+//			Li.index();
+//			Li.search("Hello world");
+//			System.out.println("Working");
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -59,7 +59,7 @@ public class SampleHandler1 extends AbstractHandler {
 
 		String projectsname = Arrays.toString(projects);
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
-		MessageDialog.openInformation(window.getShell(), "Eclias", "Corpus Extracted and Indexed for the following projects:" + projectsname);
+		MessageDialog.openInformation(window.getShell(), "Eclias", "Corpus Extracted and preprocessed for the following projects:" + projectsname);
 		return null;
 
 	}

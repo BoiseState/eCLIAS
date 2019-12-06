@@ -24,10 +24,10 @@ public class MainCorpusPreprocessor
         		System.out.println(projectsname);
     			String inputFileNameCorpus = "/Users/Vasanth/git/eCLIAS/inputFiles/P/jEdit4.3pre9/Output/MethodLevelGranuality/2019-08-19_12-12-26 Corpus-jEdit4.3pre9.corpusRawMethodLevelGranularity";
 
-    			File outputFolder1 = new File("/Users/Vasanth/git/eCLIAS/preprocessedFiles/" + projectsname);
+    			File outputFolder1 = new File(System.getProperty("user.dir")+"/preprocessedFiles/" + projectsname);
     			outputFolder1.mkdirs();
     			// Output folder
-    			String outputFolder = "/Users/Vasanth/git/eCLIAS/preprocessedFiles/" + projectsname + "/";
+    			String outputFolder = System.getProperty("user.dir")+"/preprocessedFiles/" + projectsname + "/";
 
     			CorpusPreprocessor corpusPreprocessor=new CorpusPreprocessor(inputFileNameCorpus,outputFolder);
     			corpusPreprocessor.preprocessCorpus();

@@ -56,7 +56,7 @@ public class LuceneWriteIndexFromFile {
 	private static IndexReader reader;
 	private static Query query;
 	private static String projectsname;
-	private static String indexPath = "/Users/Vasanth/git/eCLIAS/indexedFiles/"; // Path of indexed files
+	private static String indexPath = System.getProperty("user.dir")+"/indexedFiles/"; // Path of indexed files
 	private static String newmethodname;
 
 	public static class Score {
@@ -65,16 +65,16 @@ public class LuceneWriteIndexFromFile {
 		IMethod method;
 		String packageName;
 		String methodName;
-		static IMethod ideEditor;
 		String className;
+		String totalhits;
 
-		Score(String score, IMethod method, String packageName, String methodName, String className, IMethod ideEditor) {
+		Score(String score, IMethod method, String packageName, String methodName, String className, String totalhits) {
 			this.score = score;
 			this.method = method;
 			this.packageName = packageName;
 			this.methodName = methodName;
 			this.className = className;
-			this.ideEditor = ideEditor;
+			this.totalhits = totalhits;
 		}
 
 		public String getScore() {
@@ -97,8 +97,8 @@ public class LuceneWriteIndexFromFile {
 			return className;
 		}
 
-		public static IMethod getEditor() {
-			return ideEditor;
+		public  String getHits() {
+			return totalhits;
 		}
 	}
 
@@ -281,8 +281,6 @@ public class LuceneWriteIndexFromFile {
 			Float similarity = normalize(sd.score);
 			DecimalFormat df = new DecimalFormat("0.000000");
 			String scoreValue = df.format(similarity);
-			
-			System.out.println("score in two decimals : " + df.format(similarity));
 
 			IMethod member = methodMap.get(doc.get("nodeHandlerID"));
 
@@ -306,7 +304,8 @@ public class LuceneWriteIndexFromFile {
 				newmethodname = methodName.concat(")");
 			}
 
-			Score s = new Score(scoreValue, member, packageName, newmethodname, className, member);
+			String totaldocs = "Total Results :: " + foundDocs.totalHits;
+			Score s = new Score(scoreValue, member, packageName, newmethodname, className, totaldocs);
 
 			searchResults.add(s);
 

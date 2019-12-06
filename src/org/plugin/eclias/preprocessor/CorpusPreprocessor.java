@@ -13,7 +13,7 @@ public class CorpusPreprocessor
 	public static final String SUFFIX_AFTER_SPLIT_STOP="-AfterSplitStop";
 	public static final String SUFFIX_AFTER_SPLIT_STOP_STEM="-AfterSplitStopStem";
 
-	public static String FILE_NAME_LIST_OF_STOP_WORDS="/Users/Vasanth/git/eCLIAS/stopWords/StopWords.txt";
+	public static String FILE_NAME_LIST_OF_STOP_WORDS=System.getProperty("user.dir")+"/StopWords.txt";
 	
 	private String inputFileNameCorpus;
 	private String inputFileNameCorpusWithoutPath;

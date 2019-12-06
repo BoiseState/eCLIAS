@@ -8,6 +8,7 @@ import org.plugin.eclias.corpus.MainCorpusGenerator;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile.Score;
 import org.plugin.eclias.preprocessor.MainCorpusPreprocessor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
@@ -139,6 +140,7 @@ public class EcliasView extends ViewPart {
 				try {
 					LuceneWriteIndexFromFile.index();
 					ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
+					
 //					MainCorpusGenerator mcg = new MainCorpusGenerator();
 //					mcg.main(null);
 //					System.out.println("Corpus Generated");
@@ -146,8 +148,9 @@ public class EcliasView extends ViewPart {
 //					mcp.main(null);
 //					System.out.println("Preprocessing Generated");
 //					MessageDialog.openInformation(shell, "Eclias", "Corpus Extracted and Indexed for the following projects:");
-
+				
 					for (Score sc : s) {
+						resultsLabel.setText(sc.getHits());
 						item = new TableItem(table, SWT.NONE);
 						item.setText(0, sc.getClassName() + "");
 						item.setText(1, sc.getMethodName() + "");
@@ -167,8 +170,6 @@ public class EcliasView extends ViewPart {
 									for(Score sc: s) {
 
 										if(classname.equals(sc.getClassName()) && methodname.equals(sc.getMethodName())) {
-											System.out.println("methodname inside coming? ");
-											System.out.println(Paths.get("").toAbsolutePath().toString());
 											(new RevealInEditorAction(sc.getMethod())).run();
 										}
 										else {
@@ -202,6 +203,7 @@ public class EcliasView extends ViewPart {
 		clearButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				resultsLabel.setText("Results:");
 				queryText.setText("");
 				table.removeAll();
 			}
