@@ -22,7 +22,7 @@ public class MainCorpusPreprocessor
     		{
     			String projectsname = project.toString();
         		System.out.println(projectsname);
-    			String inputFileNameCorpus = "/Users/Vasanth/git/eCLIAS/inputFiles/P/jEdit4.3pre9/Output/MethodLevelGranuality/2019-08-19_12-12-26 Corpus-jEdit4.3pre9.corpusRawMethodLevelGranularity";
+    			String inputFileNameCorpus = System.getProperty("user.dir")+"/inputFiles/" + projectsname;
 
     			File outputFolder1 = new File(System.getProperty("user.dir")+"/preprocessedFiles/" + projectsname);
     			outputFolder1.mkdirs();

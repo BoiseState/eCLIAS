@@ -42,7 +42,7 @@ public class MainCorpusGenerator
 		for (IProject project1 : projects1) {
 			if (project1.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
 			String projectsname = project1.toString();
-			File newDirectory = new File("./inputFiles/" + projectsname);
+			File newDirectory = new File(System.getProperty("user.dir")+"/inputFiles/" + projectsname);
 			newDirectory.mkdirs();
 			if (newDirectory != null) {
 				File file = new File("test" +strDate + ".txt");
