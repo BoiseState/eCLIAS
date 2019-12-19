@@ -61,6 +61,7 @@ public class EcliasView extends ViewPart {
 	private Composite queryComposite;
 	private Label queryLabel;
 	private Button searchButton;
+	private Button searchButton1;
 	private Button clearButton;
 	private StyledText queryText;
 	private Table table;
@@ -120,14 +121,26 @@ public class EcliasView extends ViewPart {
 		GridData queryCompositeGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		queryComposite.setLayoutData(queryCompositeGridData);
 		GridLayout queryCompositeLayout = new GridLayout();
-		queryCompositeLayout.numColumns = 3;
+		queryCompositeLayout.numColumns = 4;
 		queryCompositeLayout.marginWidth = 0;
 		queryComposite.setLayout(queryCompositeLayout);
 
+//		searchButton1 = new Button(queryComposite, SWT.PUSH);
+//		searchButton1.setText("Options");
+//		GridData queryLabelGridData1 = new GridData(SWT.END, SWT.END, false, false);
+//		searchButton1.setLayoutData(queryLabelGridData1);
+		
 		queryLabel = new Label(queryComposite, SWT.PUSH);
 		queryLabel.setText("Search Text:");
 		GridData queryLabelGridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
 		queryLabel.setLayoutData(queryLabelGridData);
+		
+		searchButton1 = new Button(queryComposite, SWT.PUSH);
+		searchButton1.setText("Options");
+		GridData queryLabelGridData1 = new GridData(SWT.RIGHT, SWT.END, false, false);
+		searchButton1.setLayoutData(queryLabelGridData1);
+
+		
 		searchButton = new Button(queryComposite, SWT.PUSH);
 		searchButton.setText("Search");
 		GridData searchButtonGridData = new GridData(SWT.END, SWT.END, false, false);
