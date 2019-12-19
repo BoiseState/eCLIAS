@@ -1,6 +1,7 @@
 package org.plugin.eclias.views;
 
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.*;
@@ -60,8 +61,8 @@ public class EcliasView extends ViewPart {
 
 	private Composite queryComposite;
 	private Label queryLabel;
+	private Button optionsButton;
 	private Button searchButton;
-	private Button searchButton1;
 	private Button clearButton;
 	private StyledText queryText;
 	private Table table;
@@ -124,22 +125,37 @@ public class EcliasView extends ViewPart {
 		queryCompositeLayout.numColumns = 4;
 		queryCompositeLayout.marginWidth = 0;
 		queryComposite.setLayout(queryCompositeLayout);
-
-//		searchButton1 = new Button(queryComposite, SWT.PUSH);
-//		searchButton1.setText("Options");
-//		GridData queryLabelGridData1 = new GridData(SWT.END, SWT.END, false, false);
-//		searchButton1.setLayoutData(queryLabelGridData1);
 		
 		queryLabel = new Label(queryComposite, SWT.PUSH);
 		queryLabel.setText("Search Text:");
 		GridData queryLabelGridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
 		queryLabel.setLayoutData(queryLabelGridData);
 		
-		searchButton1 = new Button(queryComposite, SWT.PUSH);
-		searchButton1.setText("Options");
-		GridData queryLabelGridData1 = new GridData(SWT.RIGHT, SWT.END, false, false);
-		searchButton1.setLayoutData(queryLabelGridData1);
-
+		Combo combo = new Combo(queryComposite, SWT.PUSH);
+		String[] ITEMS = {"Use Stop Words", "Use Porter Stemmer", "Keep the Original (Compound) Identifiers"};
+	    combo.setItems(ITEMS);
+	    combo.select(2);
+	    
+	    combo.addSelectionListener(new SelectionAdapter() {
+	    	@Override
+	        public void widgetSelected(SelectionEvent e) {
+	    		
+	          System.out.println("Combo");
+	        }
+	      });
+		
+//		optionsButton = new Button(queryComposite, SWT.PUSH);
+//		optionsButton.setText("Options");
+//		GridData optionsButtonGridData = new GridData(SWT.RIGHT, SWT.END, false, false);
+//		optionsButton.setLayoutData(optionsButtonGridData);
+//		optionsButton.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				
+//			    System.out.println("Combo is" +combo);
+//				
+//			}
+//		});
 		
 		searchButton = new Button(queryComposite, SWT.PUSH);
 		searchButton.setText("Search");
