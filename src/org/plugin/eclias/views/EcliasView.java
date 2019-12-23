@@ -3,18 +3,31 @@ package org.plugin.eclias.views;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Dialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.*;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.plugin.eclias.corpus.MainCorpusGenerator;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile.Score;
+import org.plugin.eclias.index.StartMSRAction;
 import org.plugin.eclias.preprocessor.MainCorpusPreprocessor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.ui.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -24,6 +37,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.plugin.eclias.views.RevealInEditorAction;
+
 import java.nio.file.Paths;
 
 import java.util.ArrayList;
@@ -118,6 +132,10 @@ public class EcliasView extends ViewPart {
 		gridLayout.numColumns = 1;
 		parent.setLayout(gridLayout);
 
+		IActionBars lBars = getViewSite().getActionBars();
+		fillLocalToolBar(lBars.getToolBarManager());
+//		fillToolBarMenu(lBars.getMenuManager());
+		
 		queryComposite = new Composite(parent, SWT.PUSH);
 		GridData queryCompositeGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
 		queryComposite.setLayoutData(queryCompositeGridData);
@@ -131,31 +149,62 @@ public class EcliasView extends ViewPart {
 		GridData queryLabelGridData = new GridData(SWT.LEFT, SWT.BOTTOM, true, false);
 		queryLabel.setLayoutData(queryLabelGridData);
 		
-		Combo combo = new Combo(queryComposite, SWT.PUSH);
-		String[] ITEMS = {"Use Stop Words", "Use Porter Stemmer", "Keep the Original (Compound) Identifiers"};
-	    combo.setItems(ITEMS);
-	    combo.select(2);
-	    
-	    combo.addSelectionListener(new SelectionAdapter() {
-	    	@Override
-	        public void widgetSelected(SelectionEvent e) {
-	    		
-	          System.out.println("Combo");
-	        }
-	      });
-		
-//		optionsButton = new Button(queryComposite, SWT.PUSH);
-//		optionsButton.setText("Options");
-//		GridData optionsButtonGridData = new GridData(SWT.RIGHT, SWT.END, false, false);
-//		optionsButton.setLayoutData(optionsButtonGridData);
-//		optionsButton.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				
-//			    System.out.println("Combo is" +combo);
-//				
-//			}
-//		});
+		optionsButton = new Button(queryComposite, SWT.PUSH);
+		optionsButton.setText("Choose Indexing Options");
+		GridData optionsButtonGridData = new GridData(SWT.RIGHT, SWT.END, false, false);
+		optionsButton.setLayoutData(optionsButtonGridData);
+		optionsButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean[] result = new boolean[1];
+				Shell shell = viewer.getControl().getShell();
+				Shell dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+				dialog.setLayout(new RowLayout(3));
+				Button checkBox = new Button(dialog,SWT.CHECK);
+				checkBox.setText("Use Stop Words"); 
+				checkBox.addSelectionListener(new SelectionAdapter() {
+			        @Override
+			        public void widgetSelected(SelectionEvent event) {
+			            Button btn = (Button) event.getSource();
+			            System.out.println(btn.getSelection());
+			        }
+			    });	
+				Button checkBox1 = new Button(dialog,SWT.CHECK);
+				checkBox1.setText("Use Porter Stemmer"); 
+				checkBox1.addSelectionListener(new SelectionAdapter() {
+			        @Override
+			        public void widgetSelected(SelectionEvent event) {
+			            Button btn = (Button) event.getSource();
+			            System.out.println(btn.getSelection());
+			        }
+			    });	
+				Button checkBox2 = new Button(dialog,SWT.CHECK);
+				checkBox2.setText("Keep the Original (Compound) identifiers"); 
+				checkBox2.addSelectionListener(new SelectionAdapter() {
+			        @Override
+			        public void widgetSelected(SelectionEvent event) {
+			            Button btn = (Button) event.getSource();
+			            System.out.println(btn.getSelection());
+			        }
+			    });	
+				 Button ok = new Button(dialog, SWT.PUSH);
+				 ok.setText("OK");
+				    Listener listener = new Listener() {
+				    	@Override
+				      public void handleEvent(Event event) {
+						result[0] = event.widget == ok;
+				        dialog.close();
+				      }
+				    };
+				 ok.addListener(SWT.Selection, listener);
+				 dialog.setText("Choose Indexing Options");
+				 dialog.pack();
+				 dialog.open();
+				    
+				System.out.println("Result:" + result[0]);
+				System.out.println("options button is clicked");
+			}
+		});
 		
 		searchButton = new Button(queryComposite, SWT.PUSH);
 		searchButton.setText("Search");
@@ -281,5 +330,16 @@ public class EcliasView extends ViewPart {
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
+	
+	private void fillLocalToolBar(IToolBarManager pManager)
+	{
 
+	//	pManager.add(new VisualizeAction(getSite()));
+
+		pManager.add(new StartMSRAction());
+
+		//TODO: ADD MSR button right here
+	}
+	
+		
 }
