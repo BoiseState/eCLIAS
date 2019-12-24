@@ -11,9 +11,15 @@ import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.StopAnalyzer;
+import org.apache.lucene.analysis.custom.CustomAnalyzer;
+import org.apache.lucene.analysis.custom.CustomAnalyzer.Builder;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.standard.StandardFilter;
+import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
@@ -46,6 +52,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.plugin.eclias.views.EcliasView;
 
 public class LuceneWriteIndexFromFile {
 	static HashMap<IMethod, Method> methods = new HashMap<IMethod, Method>();
@@ -53,6 +60,7 @@ public class LuceneWriteIndexFromFile {
 	static HashMap<String, IMethod> methodIDMap = new HashMap<String, IMethod>();
 	static IProgressMonitor monitor;
 	static Analyzer analyzer;
+	static IndexWriterConfig iwc; 
 	private static IndexReader reader;
 	private static Query query;
 	private static String projectsname;
@@ -148,7 +156,25 @@ public class LuceneWriteIndexFromFile {
 					Directory dir = FSDirectory.open(Paths.get(indexPath));
 
 					// IndexWriter Configuration
-					IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer());
+					if(EcliasView.indexOption1 == true) {  //use stop words
+						iwc = new IndexWriterConfig(getAnalyzer());
+					}
+					else {
+						Analyzer analyzer1 = new StandardAnalyzer();
+						iwc = new IndexWriterConfig(analyzer1);  // 38 results after search 
+					}
+//					Analyzer analyzer1 = new StandardAnalyzer();
+//					IndexWriterConfig iwc = new IndexWriterConfig(analyzer1); 38 results after search 
+//					IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer()); // 41 results after search 
+//					 Analyzer analyzer1 = CustomAnalyzer.builder()
+//						      .withTokenizer("standard")
+//						      .addTokenFilter("lowercase")
+//						      .addTokenFilter("stop")
+//						      .addTokenFilter("porterstem")
+//						      .addTokenFilter("capitalization")
+//						      .build();
+//					IndexWriterConfig iwc = new IndexWriterConfig(analyzer1);
+					
 					iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
 					// IndexWriter writes new index files to the directory
@@ -333,5 +359,6 @@ public class LuceneWriteIndexFromFile {
 	private static Float normalize(float score) {
 		return (float) (1.0 - Math.pow(1.0 / (1.0 + 0.2 * score), 5));
 	}
+	
 
 }

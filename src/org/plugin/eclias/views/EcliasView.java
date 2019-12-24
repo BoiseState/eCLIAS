@@ -1,30 +1,17 @@
 package org.plugin.eclias.views;
 
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Dialog;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.*;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.plugin.eclias.corpus.MainCorpusGenerator;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile;
 import org.plugin.eclias.index.LuceneWriteIndexFromFile.Score;
 import org.plugin.eclias.index.StartMSRAction;
-import org.plugin.eclias.preprocessor.MainCorpusPreprocessor;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -38,7 +25,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.plugin.eclias.views.RevealInEditorAction;
 
-import java.nio.file.Paths;
 
 import java.util.ArrayList;
 
@@ -71,7 +57,10 @@ public class EcliasView extends ViewPart {
 	@Inject
 	IWorkbench workbench;
 
-	private TableViewer viewer;
+	public static TableViewer viewer;
+	public static Boolean indexOption1 = false;
+	public static Boolean indexOption2 = false;
+	public static Boolean indexOption3 = false;
 
 	private Composite queryComposite;
 	private Label queryLabel;
@@ -156,52 +145,54 @@ public class EcliasView extends ViewPart {
 		optionsButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				boolean[] result = new boolean[1];
 				Shell shell = viewer.getControl().getShell();
 				Shell dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 				dialog.setLayout(new RowLayout(3));
-				Button checkBox = new Button(dialog,SWT.CHECK);
-				checkBox.setText("Use Stop Words"); 
-				checkBox.addSelectionListener(new SelectionAdapter() {
-			        @Override
-			        public void widgetSelected(SelectionEvent event) {
-			            Button btn = (Button) event.getSource();
-			            System.out.println(btn.getSelection());
-			        }
-			    });	
 				Button checkBox1 = new Button(dialog,SWT.CHECK);
-				checkBox1.setText("Use Porter Stemmer"); 
+				checkBox1.setText("Use Stop Words"); 
 				checkBox1.addSelectionListener(new SelectionAdapter() {
 			        @Override
 			        public void widgetSelected(SelectionEvent event) {
 			            Button btn = (Button) event.getSource();
-			            System.out.println(btn.getSelection());
+			            indexOption1=btn.getSelection();
+			            System.out.println("Use Stop Words:" +indexOption1);
 			        }
 			    });	
 				Button checkBox2 = new Button(dialog,SWT.CHECK);
-				checkBox2.setText("Keep the Original (Compound) identifiers"); 
+				checkBox2.setText("Use Porter Stemmer"); 
 				checkBox2.addSelectionListener(new SelectionAdapter() {
 			        @Override
 			        public void widgetSelected(SelectionEvent event) {
 			            Button btn = (Button) event.getSource();
-			            System.out.println(btn.getSelection());
+			            indexOption2=btn.getSelection();
+			            System.out.println("Use porter stemmer:" +indexOption2);
+			        }
+			    });	
+				Button checkBox3 = new Button(dialog,SWT.CHECK);
+				checkBox3.setText("Keep the Original (Compound) identifiers"); 
+				checkBox3.addSelectionListener(new SelectionAdapter() {
+			        @Override
+			        public void widgetSelected(SelectionEvent event) {
+			            Button btn = (Button) event.getSource();
+			            indexOption3=btn.getSelection();
+			            System.out.println("Original identifiers:" +indexOption3);
 			        }
 			    });	
 				 Button ok = new Button(dialog, SWT.PUSH);
 				 ok.setText("OK");
-				    Listener listener = new Listener() {
-				    	@Override
-				      public void handleEvent(Event event) {
-						result[0] = event.widget == ok;
-				        dialog.close();
-				      }
-				    };
-				 ok.addListener(SWT.Selection, listener);
+				 ok.addSelectionListener(new SelectionAdapter() {
+				        @Override
+				        public void widgetSelected(SelectionEvent event) {
+				            dialog.close();
+				        }
+				    });	
+				 checkBox1.setSelection(indexOption1);
+				 checkBox2.setSelection(indexOption2);
+				 checkBox3.setSelection(indexOption3);
 				 dialog.setText("Choose Indexing Options");
 				 dialog.pack();
 				 dialog.open();
-				    
-				System.out.println("Result:" + result[0]);
+				
 				System.out.println("options button is clicked");
 			}
 		});
@@ -241,7 +232,7 @@ public class EcliasView extends ViewPart {
 						        
 								String classname = ((TableItem) e.item).getText(0); 
 								String methodname = ((TableItem) e.item).getText(1); 
-								setFocus();
+								setFocus(); 
 								
 								try {
 									ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
@@ -255,7 +246,7 @@ public class EcliasView extends ViewPart {
 										}
 										System.out.println("its not breaking");
 										
-								}
+								} 
 
 								}
 								catch (Exception e1) {
@@ -284,6 +275,9 @@ public class EcliasView extends ViewPart {
 				resultsLabel.setText("Results:");
 				queryText.setText("");
 				table.removeAll();
+				indexOption1 = false;
+				indexOption2 = false;
+				indexOption3 = false;
 			}
 		});
 
@@ -333,8 +327,6 @@ public class EcliasView extends ViewPart {
 	
 	private void fillLocalToolBar(IToolBarManager pManager)
 	{
-
-	//	pManager.add(new VisualizeAction(getSite()));
 
 		pManager.add(new StartMSRAction());
 
