@@ -12,6 +12,7 @@ import java.util.HashSet;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.custom.CustomAnalyzer;
 import org.apache.lucene.analysis.custom.CustomAnalyzer.Builder;
@@ -156,23 +157,26 @@ public class LuceneWriteIndexFromFile {
 					Directory dir = FSDirectory.open(Paths.get(indexPath));
 
 					// IndexWriter Configuration
-					if(EcliasView.indexOption1 == true) {  //use stop words
-						iwc = new IndexWriterConfig(getAnalyzer());
+					if(EcliasView.useOriginal == true) {  //use stop words
+						Analyzer analyzer1 = new StandardAnalyzer();
+						iwc = new IndexWriterConfig(analyzer1);
 					}
 					else {
-						Analyzer analyzer1 = new StandardAnalyzer();
-						iwc = new IndexWriterConfig(analyzer1);  // 38 results after search 
+//						Analyzer analyzer1 = new StandardAnalyzer();
+						iwc = new IndexWriterConfig(new MyCustomAnalyzer());  // 38 results after search 
 					}
 //					Analyzer analyzer1 = new StandardAnalyzer();
 //					IndexWriterConfig iwc = new IndexWriterConfig(analyzer1); 38 results after search 
 //					IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer()); // 41 results after search 
-//					 Analyzer analyzer1 = CustomAnalyzer.builder()
-//						      .withTokenizer("standard")
-//						      .addTokenFilter("lowercase")
-//						      .addTokenFilter("stop")
-//						      .addTokenFilter("porterstem")
-//						      .addTokenFilter("capitalization")
-//						      .build();
+					
+					 Analyzer customAnalyzer = CustomAnalyzer.builder()
+						      .withTokenizer("standard")
+						      .addTokenFilter("lowercase")
+						      .addTokenFilter("stop")
+						      .addTokenFilter("porterstem")
+						      .addTokenFilter("capitalization")
+						      .build();
+					 
 //					IndexWriterConfig iwc = new IndexWriterConfig(analyzer1);
 					
 					iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
@@ -188,7 +192,9 @@ public class LuceneWriteIndexFromFile {
 						indexDoc(writer, methodIDMap.get(key));
 						monitor.worked(1);
 					}
-
+					System.out.println("methodIDMAP is" +methodIDMap);
+					System.out.println("monitor is" +monitor);
+					System.out.println("writer is" +writer);
 					monitor.done();
 					writer.close();
 

@@ -58,9 +58,9 @@ public class EcliasView extends ViewPart {
 	IWorkbench workbench;
 
 	public static TableViewer viewer;
-	public static Boolean indexOption1 = false;
-	public static Boolean indexOption2 = false;
-	public static Boolean indexOption3 = false;
+	public static Boolean useStopWords = false;
+	public static Boolean usePorterStemmer = false;
+	public static Boolean useOriginal = false;
 
 	private Composite queryComposite;
 	private Label queryLabel;
@@ -154,8 +154,8 @@ public class EcliasView extends ViewPart {
 			        @Override
 			        public void widgetSelected(SelectionEvent event) {
 			            Button btn = (Button) event.getSource();
-			            indexOption1=btn.getSelection();
-			            System.out.println("Use Stop Words:" +indexOption1);
+			            useStopWords=btn.getSelection();
+			            System.out.println("Use Stop Words:" +useStopWords);
 			        }
 			    });	
 				Button checkBox2 = new Button(dialog,SWT.CHECK);
@@ -164,8 +164,8 @@ public class EcliasView extends ViewPart {
 			        @Override
 			        public void widgetSelected(SelectionEvent event) {
 			            Button btn = (Button) event.getSource();
-			            indexOption2=btn.getSelection();
-			            System.out.println("Use porter stemmer:" +indexOption2);
+			            usePorterStemmer=btn.getSelection();
+			            System.out.println("Use porter stemmer:" +usePorterStemmer);
 			        }
 			    });	
 				Button checkBox3 = new Button(dialog,SWT.CHECK);
@@ -174,8 +174,8 @@ public class EcliasView extends ViewPart {
 			        @Override
 			        public void widgetSelected(SelectionEvent event) {
 			            Button btn = (Button) event.getSource();
-			            indexOption3=btn.getSelection();
-			            System.out.println("Original identifiers:" +indexOption3);
+			            useOriginal=btn.getSelection();
+			            System.out.println("Original identifiers:" +useOriginal);
 			        }
 			    });	
 				 Button ok = new Button(dialog, SWT.PUSH);
@@ -186,9 +186,9 @@ public class EcliasView extends ViewPart {
 				            dialog.close();
 				        }
 				    });	
-				 checkBox1.setSelection(indexOption1);
-				 checkBox2.setSelection(indexOption2);
-				 checkBox3.setSelection(indexOption3);
+				 checkBox1.setSelection(useStopWords);
+				 checkBox2.setSelection(usePorterStemmer);
+				 checkBox3.setSelection(useOriginal);
 				 dialog.setText("Choose Indexing Options");
 				 dialog.pack();
 				 dialog.open();
@@ -275,9 +275,9 @@ public class EcliasView extends ViewPart {
 				resultsLabel.setText("Results:");
 				queryText.setText("");
 				table.removeAll();
-				indexOption1 = false;
-				indexOption2 = false;
-				indexOption3 = false;
+				useStopWords = false;
+				usePorterStemmer = false;
+				useOriginal = false;
 			}
 		});
 
