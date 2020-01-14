@@ -32,14 +32,10 @@ public class MyCustomAnalyzer extends Analyzer {
         	result = new PorterStemFilter(result);
         	
         }
-//        if(useLowerCasefilter == true) {
-//        	result = new LowerCaseFilter(result);
-//        }
+        if(EcliasView.useLowerCase == true) {
+        	result = new LowerCaseFilter(result);
+        }
        
-//        if (useCapitalizationFilter == true) { 
-//        	result = new CapitalizationFilter(result);	
-//        }
-//         
         return new TokenStreamComponents(src, result);
     }
 

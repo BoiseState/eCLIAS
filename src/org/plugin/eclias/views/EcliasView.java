@@ -60,6 +60,7 @@ public class EcliasView extends ViewPart {
 	public static TableViewer viewer;
 	public static Boolean useStopWords = false;
 	public static Boolean usePorterStemmer = false;
+	public static Boolean useLowerCase = false;
 	public static Boolean useOriginal = false;
 
 	private Composite queryComposite;
@@ -169,8 +170,19 @@ public class EcliasView extends ViewPart {
 			        }
 			    });	
 				Button checkBox3 = new Button(dialog,SWT.CHECK);
-				checkBox3.setText("Keep the Original (Compound) identifiers"); 
+				checkBox3.setText("Use Lower Case Filter"); 
 				checkBox3.addSelectionListener(new SelectionAdapter() {
+			        @Override
+			        public void widgetSelected(SelectionEvent event) {
+			            Button btn = (Button) event.getSource();
+			            useLowerCase=btn.getSelection();
+			            System.out.println("Original identifiers:" +useLowerCase);
+			        }
+			    });	
+				
+				Button checkBox4 = new Button(dialog,SWT.CHECK);
+				checkBox4.setText("Keep the Original (Compound) identifiers"); 
+				checkBox4.addSelectionListener(new SelectionAdapter() {
 			        @Override
 			        public void widgetSelected(SelectionEvent event) {
 			            Button btn = (Button) event.getSource();
@@ -188,7 +200,9 @@ public class EcliasView extends ViewPart {
 				    });	
 				 checkBox1.setSelection(useStopWords);
 				 checkBox2.setSelection(usePorterStemmer);
-				 checkBox3.setSelection(useOriginal);
+				 checkBox3.setSelection(useLowerCase);
+				 checkBox4.setSelection(useOriginal);
+				 
 				 dialog.setText("Choose Indexing Options");
 				 dialog.pack();
 				 dialog.open();
@@ -277,6 +291,7 @@ public class EcliasView extends ViewPart {
 				table.removeAll();
 				useStopWords = false;
 				usePorterStemmer = false;
+				useLowerCase = false;
 				useOriginal = false;
 			}
 		});
