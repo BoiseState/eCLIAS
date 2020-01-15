@@ -5,22 +5,11 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.CharArraySet;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.core.StopAnalyzer;
-import org.apache.lucene.analysis.custom.CustomAnalyzer;
-import org.apache.lucene.analysis.custom.CustomAnalyzer.Builder;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
-import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.standard.StandardFilter;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
@@ -61,11 +50,11 @@ public class LuceneWriteIndexFromFile {
 	static HashMap<String, IMethod> methodIDMap = new HashMap<String, IMethod>();
 	static IProgressMonitor monitor;
 	static Analyzer analyzer;
-	static IndexWriterConfig iwc; 
+	static IndexWriterConfig iwc;
 	private static IndexReader reader;
 	private static Query query;
 	private static String projectsname;
-	private static String indexPath = System.getProperty("user.dir")+"/indexedFiles/"; // Path of indexed files
+	private static String indexPath = System.getProperty("user.dir") + "/indexedFiles/"; // Path of indexed files
 	private static String newmethodname;
 
 	public static class Score {
@@ -106,7 +95,7 @@ public class LuceneWriteIndexFromFile {
 			return className;
 		}
 
-		public  String getHits() {
+		public String getHits() {
 			return totalhits;
 		}
 	}
@@ -141,9 +130,7 @@ public class LuceneWriteIndexFromFile {
 			}
 		}
 
-		
 //		Analyzer analyzer = new StandardAnalyzer(); // analyzer with the default stop words
-		   
 
 		Job job = new Job("Lucene Indexing") {
 
@@ -157,28 +144,14 @@ public class LuceneWriteIndexFromFile {
 					Directory dir = FSDirectory.open(Paths.get(indexPath));
 
 					// IndexWriter Configuration
-					if(EcliasView.useOriginal == true) {  //use stop words
-						Analyzer analyzer1 = new StandardAnalyzer();
-						iwc = new IndexWriterConfig(analyzer1);
-					}
-					else {
+//					if (EcliasView.useOriginal == true) { // use stop words
+//						Analyzer standardAnalyzer = new StandardAnalyzer();
+//						iwc = new IndexWriterConfig(standardAnalyzer);
+//					} else {
 //						Analyzer analyzer1 = new StandardAnalyzer();
-						iwc = new IndexWriterConfig(new MyCustomAnalyzer());  // 38 results after search 
-					}
-//					Analyzer analyzer1 = new StandardAnalyzer();
-//					IndexWriterConfig iwc = new IndexWriterConfig(analyzer1); 38 results after search 
-//					IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer()); // 41 results after search 
-					
-					 Analyzer customAnalyzer = CustomAnalyzer.builder()
-						      .withTokenizer("standard")
-						      .addTokenFilter("lowercase")
-						      .addTokenFilter("stop")
-						      .addTokenFilter("porterstem")
-						      .addTokenFilter("capitalization")
-						      .build();
-					 
-//					IndexWriterConfig iwc = new IndexWriterConfig(analyzer1);
-					
+						iwc = new IndexWriterConfig(new MyCustomAnalyzer()); // 38 results after search
+//					}
+
 					iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
 					// IndexWriter writes new index files to the directory
@@ -187,14 +160,15 @@ public class LuceneWriteIndexFromFile {
 					writer.deleteAll();
 
 					monitor.beginTask("Building index", methodIDMap.size());
+					System.out.println("methodidmap size is" +methodIDMap.size());
 
 					for (String key : methodIDMap.keySet()) {
 						indexDoc(writer, methodIDMap.get(key));
 						monitor.worked(1);
 					}
-					System.out.println("methodIDMAP is" +methodIDMap);
-					System.out.println("monitor is" +monitor);
-					System.out.println("writer is" +writer);
+//					System.out.println("methodIDMAP is" + methodIDMap);
+					System.out.println("monitor is" + monitor);
+					System.out.println("writer is" + writer);
 					monitor.done();
 					writer.close();
 
@@ -226,8 +200,13 @@ public class LuceneWriteIndexFromFile {
 			method.getOpenable().open(new NullProgressMonitor());
 			source = method.getSource();
 			if (source != null) {
-				source = IRUtil.splitAndMergeCamelCase(source);
-
+//				if (EcliasView.usesplitidentifiers)
+//				source = IRUtil.splitAndMergeCamelCase(source);
+				
+				if (EcliasView.useSplitIdentifiers) {
+					source = IRUtil.splitIdentifiers(source, EcliasView.useOriginal);
+				}
+				
 				doc.add(new StringField("path", source, Field.Store.YES));
 				doc.add(new LongPoint("modified", lastModified));
 				doc.add(new TextField("contents", source, Store.YES));
@@ -240,22 +219,22 @@ public class LuceneWriteIndexFromFile {
 		}
 	}
 
-	static CharArraySet getStopWords() {
-		String[] JAVA_STOP_WORDS = { "public", "private", "protected", "interface", "abstract", "implements", "extends",
-				"null", "new", "switch", "case", "default", "synchronized", "do", "if", "else", "break", "continue",
-				"this", "assert", "for", "instanceof", "transient", "final", "static", "void", "catch", "try", "throws",
-				"throw", "class", "finally", "return", "const", "native", "super", "while", "import", "package", "true",
-				"false", "but", "does", "shouldn't", "aren't", "are", "should", "such", "they", "how" };
-		HashSet<String> javaStopWords = new HashSet<String>();
-		javaStopWords.addAll(Arrays.asList(JAVA_STOP_WORDS));
-		CharArraySet allStopWords = new CharArraySet(javaStopWords, false);
-		allStopWords.addAll(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-		return allStopWords;
-	}
-
+//	static CharArraySet getStopWords() {
+//		String[] JAVA_STOP_WORDS = { "public", "private", "protected", "interface", "abstract", "implements", "extends",
+//				"null", "new", "switch", "case", "default", "synchronized", "do", "if", "else", "break", "continue",
+//				"this", "assert", "for", "instanceof", "transient", "final", "static", "void", "catch", "try", "throws",
+//				"throw", "class", "finally", "return", "const", "native", "super", "while", "import", "package", "true",
+//				"false", "but", "does", "shouldn't", "aren't", "are", "should", "such", "they", "how" };
+//		HashSet<String> javaStopWords = new HashSet<String>();
+//		javaStopWords.addAll(Arrays.asList(JAVA_STOP_WORDS));
+//		CharArraySet allStopWords = new CharArraySet(javaStopWords, false);
+//		allStopWords.addAll(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+//		return allStopWords;
+//	}
+//
 	static Analyzer getAnalyzer() {
 		if (analyzer == null) {
-			analyzer = new EnglishAnalyzer(getStopWords());
+			analyzer = new EnglishAnalyzer(MyCustomAnalyzer.getStopWords());
 		}
 		return analyzer;
 	}
@@ -365,6 +344,5 @@ public class LuceneWriteIndexFromFile {
 	private static Float normalize(float score) {
 		return (float) (1.0 - Math.pow(1.0 / (1.0 + 0.2 * score), 5));
 	}
-	
 
 }

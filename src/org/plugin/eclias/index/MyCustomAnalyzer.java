@@ -1,6 +1,5 @@
 package org.plugin.eclias.index;
 
-
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -10,36 +9,34 @@ import org.apache.lucene.analysis.LowerCaseFilter;
 import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.StopAnalyzer;
-import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.en.PorterStemFilter;
-import org.apache.lucene.analysis.miscellaneous.CapitalizationFilter;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.plugin.eclias.views.EcliasView;
 
 public class MyCustomAnalyzer extends Analyzer {
-	
-    @Override
-    protected TokenStreamComponents createComponents(String fieldName) {
-        StandardTokenizer src = new StandardTokenizer();
-        TokenStream result = new StandardFilter(src);
-        if(EcliasView.useStopWords == true) {
-        	result = new StopFilter(result, getStopWords());
-//        	result = new StopFilter(result,  StandardAnalyzer.STOP_WORDS_SET);	
-        }
-       if(EcliasView.usePorterStemmer == true) {
-        	result = new PorterStemFilter(result);
-        	
-        }
-        if(EcliasView.useLowerCase == true) {
-        	result = new LowerCaseFilter(result);
-        }
-       
-        return new TokenStreamComponents(src, result);
-    }
 
-    
+	@Override
+	protected TokenStreamComponents createComponents(String fieldName) {
+		StandardTokenizer src = new StandardTokenizer();
+		TokenStream result = new StandardFilter(src);
+		if (EcliasView.useStopWords == true) {
+			result = new StopFilter(result, getStopWords());
+//        	result = new StopFilter(result,  StandardAnalyzer.STOP_WORDS_SET);	
+		}
+		if (EcliasView.usePorterStemmer == true) {
+			result = new PorterStemFilter(result);
+
+		}
+		if (EcliasView.useLowerCase == true) {
+			result = new LowerCaseFilter(result);
+		}
+		
+		System.out.println("result is:" +result);
+		
+		return new TokenStreamComponents(src, result);
+	}
+
 	static CharArraySet getStopWords() {
 		String[] JAVA_STOP_WORDS = { "public", "private", "protected", "interface", "abstract", "implements", "extends",
 				"null", "new", "switch", "case", "default", "synchronized", "do", "if", "else", "break", "continue",
@@ -53,4 +50,3 @@ public class MyCustomAnalyzer extends Analyzer {
 		return allStopWords;
 	}
 }
-
