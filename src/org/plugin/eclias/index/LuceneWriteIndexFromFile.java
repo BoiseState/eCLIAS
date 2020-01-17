@@ -5,14 +5,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.CharArraySet;
-import org.apache.lucene.analysis.core.StopAnalyzer;
-import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -46,6 +41,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.plugin.eclias.views.EcliasView;
 
 public class LuceneWriteIndexFromFile {
 	static HashMap<IMethod, Method> methods = new HashMap<IMethod, Method>();
@@ -53,10 +49,11 @@ public class LuceneWriteIndexFromFile {
 	static HashMap<String, IMethod> methodIDMap = new HashMap<String, IMethod>();
 	static IProgressMonitor monitor;
 	static Analyzer analyzer;
+	static IndexWriterConfig iwc;
 	private static IndexReader reader;
 	private static Query query;
 	private static String projectsname;
-	private static String indexPath = System.getProperty("user.dir")+"/indexedFiles/"; // Path of indexed files
+	private static String indexPath = System.getProperty("user.dir") + "/indexedFiles/"; // Path of indexed files
 	private static String newmethodname;
 
 	public static class Score {
@@ -97,7 +94,7 @@ public class LuceneWriteIndexFromFile {
 			return className;
 		}
 
-		public  String getHits() {
+		public String getHits() {
 			return totalhits;
 		}
 	}
@@ -132,9 +129,7 @@ public class LuceneWriteIndexFromFile {
 			}
 		}
 
-		
 //		Analyzer analyzer = new StandardAnalyzer(); // analyzer with the default stop words
-		   
 
 		Job job = new Job("Lucene Indexing") {
 
@@ -148,7 +143,8 @@ public class LuceneWriteIndexFromFile {
 					Directory dir = FSDirectory.open(Paths.get(indexPath));
 
 					// IndexWriter Configuration
-					IndexWriterConfig iwc = new IndexWriterConfig(getAnalyzer());
+					iwc = new IndexWriterConfig(new MyCustomAnalyzer());
+
 					iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
 					// IndexWriter writes new index files to the directory
@@ -157,18 +153,17 @@ public class LuceneWriteIndexFromFile {
 					writer.deleteAll();
 
 					monitor.beginTask("Building index", methodIDMap.size());
+					System.out.println("Total docs count: " + methodIDMap.size());
 
 					for (String key : methodIDMap.keySet()) {
 						indexDoc(writer, methodIDMap.get(key));
 						monitor.worked(1);
 					}
 
+					System.out.println("monitor is" + monitor);
+					System.out.println("writer is" + writer);
 					monitor.done();
 					writer.close();
-
-//							Terms terms = null;
-//							int doccount = terms.getDocCount();
-//							System.out.println(doccount);
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -194,7 +189,24 @@ public class LuceneWriteIndexFromFile {
 			method.getOpenable().open(new NullProgressMonitor());
 			source = method.getSource();
 			if (source != null) {
-				source = IRUtil.splitAndMergeCamelCase(source);
+				source = IRUtil.eliminateNonLiterals(source, EcliasView.useDigits);
+
+				if (EcliasView.useDigits) {
+					source = IRUtil.eliminateNonLiterals(source, EcliasView.useDigits);
+				}
+
+				if (EcliasView.useSplitIdentifiers) {
+					source = IRUtil.splitIdentifiers(source, EcliasView.useOriginal);
+				}
+
+				if (EcliasView.useStopWords) {
+					source = IRUtil.elimiateStopWords(source, 1);
+				}
+
+				if (EcliasView.usePorterStemmer) {
+					source = IRUtil.stemBuffer(source);
+
+				}
 
 				doc.add(new StringField("path", source, Field.Store.YES));
 				doc.add(new LongPoint("modified", lastModified));
@@ -202,31 +214,34 @@ public class LuceneWriteIndexFromFile {
 				doc.add(new TextField("nodeHandlerID", method.getHandleIdentifier(), Field.Store.YES));
 				writer.addDocument(doc);
 
+			} else {
+				throw new Exception("source is null" + method.getElementName());
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	static CharArraySet getStopWords() {
-		String[] JAVA_STOP_WORDS = { "public", "private", "protected", "interface", "abstract", "implements", "extends",
-				"null", "new", "switch", "case", "default", "synchronized", "do", "if", "else", "break", "continue",
-				"this", "assert", "for", "instanceof", "transient", "final", "static", "void", "catch", "try", "throws",
-				"throw", "class", "finally", "return", "const", "native", "super", "while", "import", "package", "true",
-				"false", "but", "does", "shouldn't", "aren't", "are", "should", "such", "they", "how" };
-		HashSet<String> javaStopWords = new HashSet<String>();
-		javaStopWords.addAll(Arrays.asList(JAVA_STOP_WORDS));
-		CharArraySet allStopWords = new CharArraySet(javaStopWords, false);
-		allStopWords.addAll(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-		return allStopWords;
-	}
+//	static CharArraySet getStopWords() {
+//		String[] JAVA_STOP_WORDS = { "public", "private", "protected", "interface", "abstract", "implements", "extends",
+//				"null", "new", "switch", "case", "default", "synchronized", "do", "if", "else", "break", "continue",
+//				"this", "assert", "for", "instanceof", "transient", "final", "static", "void", "catch", "try", "throws",
+//				"throw", "class", "finally", "return", "const", "native", "super", "while", "import", "package", "true",
+//				"false", "but", "does", "shouldn't", "aren't", "are", "should", "such", "they", "how" };
+//		HashSet<String> javaStopWords = new HashSet<String>();
+//		javaStopWords.addAll(Arrays.asList(JAVA_STOP_WORDS));
+//		CharArraySet allStopWords = new CharArraySet(javaStopWords, false);
+//		allStopWords.addAll(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
+//		return allStopWords;
+//	}
 
-	static Analyzer getAnalyzer() {
-		if (analyzer == null) {
-			analyzer = new EnglishAnalyzer(getStopWords());
-		}
-		return analyzer;
-	}
+//	static Analyzer getAnalyzer() {
+//		if (analyzer == null) {
+//			analyzer = new EnglishAnalyzer(getStopWords());
+//		}
+//		return analyzer;
+//	}
 
 	static IndexReader getIndexReader() {
 		return reader;
