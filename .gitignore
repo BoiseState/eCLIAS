@@ -26,3 +26,5 @@ hs_err_pid*
 
 .DS_Store
 indexedFiles/
+zconsoleoutput.txt
+SVN_metadata
