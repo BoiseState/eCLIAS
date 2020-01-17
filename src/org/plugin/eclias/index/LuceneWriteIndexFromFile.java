@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -144,13 +143,7 @@ public class LuceneWriteIndexFromFile {
 					Directory dir = FSDirectory.open(Paths.get(indexPath));
 
 					// IndexWriter Configuration
-//					if (EcliasView.useOriginal == true) { // use stop words
-//						Analyzer standardAnalyzer = new StandardAnalyzer();
-//						iwc = new IndexWriterConfig(standardAnalyzer);
-//					} else {
-//						Analyzer analyzer1 = new StandardAnalyzer();
-						iwc = new IndexWriterConfig(new MyCustomAnalyzer()); // 38 results after search
-//					}
+					iwc = new IndexWriterConfig(new MyCustomAnalyzer());
 
 					iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
 
@@ -160,21 +153,17 @@ public class LuceneWriteIndexFromFile {
 					writer.deleteAll();
 
 					monitor.beginTask("Building index", methodIDMap.size());
-					System.out.println("methodidmap size is" +methodIDMap.size());
+					System.out.println("Total docs count: " + methodIDMap.size());
 
 					for (String key : methodIDMap.keySet()) {
 						indexDoc(writer, methodIDMap.get(key));
 						monitor.worked(1);
 					}
-//					System.out.println("methodIDMAP is" + methodIDMap);
+
 					System.out.println("monitor is" + monitor);
 					System.out.println("writer is" + writer);
 					monitor.done();
 					writer.close();
-
-//							Terms terms = null;
-//							int doccount = terms.getDocCount();
-//							System.out.println(doccount);
 
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -200,20 +189,35 @@ public class LuceneWriteIndexFromFile {
 			method.getOpenable().open(new NullProgressMonitor());
 			source = method.getSource();
 			if (source != null) {
-//				if (EcliasView.usesplitidentifiers)
-//				source = IRUtil.splitAndMergeCamelCase(source);
-				
+				source = IRUtil.eliminateNonLiterals(source, EcliasView.useDigits);
+
+				if (EcliasView.useDigits) {
+					source = IRUtil.eliminateNonLiterals(source, EcliasView.useDigits);
+				}
+
 				if (EcliasView.useSplitIdentifiers) {
 					source = IRUtil.splitIdentifiers(source, EcliasView.useOriginal);
 				}
-				
+
+				if (EcliasView.useStopWords) {
+					source = IRUtil.elimiateStopWords(source, 1);
+				}
+
+				if (EcliasView.usePorterStemmer) {
+					source = IRUtil.stemBuffer(source);
+
+				}
+
 				doc.add(new StringField("path", source, Field.Store.YES));
 				doc.add(new LongPoint("modified", lastModified));
 				doc.add(new TextField("contents", source, Store.YES));
 				doc.add(new TextField("nodeHandlerID", method.getHandleIdentifier(), Field.Store.YES));
 				writer.addDocument(doc);
 
+			} else {
+				throw new Exception("source is null" + method.getElementName());
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -231,13 +235,13 @@ public class LuceneWriteIndexFromFile {
 //		allStopWords.addAll(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
 //		return allStopWords;
 //	}
-//
-	static Analyzer getAnalyzer() {
-		if (analyzer == null) {
-			analyzer = new EnglishAnalyzer(MyCustomAnalyzer.getStopWords());
-		}
-		return analyzer;
-	}
+
+//	static Analyzer getAnalyzer() {
+//		if (analyzer == null) {
+//			analyzer = new EnglishAnalyzer(getStopWords());
+//		}
+//		return analyzer;
+//	}
 
 	static IndexReader getIndexReader() {
 		return reader;

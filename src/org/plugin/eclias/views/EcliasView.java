@@ -58,9 +58,9 @@ public class EcliasView extends ViewPart {
 	public static TableViewer viewer;
 	public static Boolean useStopWords = false;
 	public static Boolean usePorterStemmer = false;
-	public static Boolean useLowerCase = false;
+	public static Boolean useDigits = false;
 	public static Boolean useOriginal = false;
-	public static Boolean useSplitIdentifiers = false; 
+	public static Boolean useSplitIdentifiers = false;
 
 	private Composite queryComposite;
 	private Label queryLabel;
@@ -146,7 +146,18 @@ public class EcliasView extends ViewPart {
 				Shell shell = viewer.getControl().getShell();
 				Shell dialog = new Shell(shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 				dialog.setLayout(new RowLayout(3));
-				
+
+				Button checkBox3 = new Button(dialog, SWT.CHECK);
+				checkBox3.setText("Keep Digits");
+				checkBox3.addSelectionListener(new SelectionAdapter() {
+					@Override
+					public void widgetSelected(SelectionEvent event) {
+						Button btn = (Button) event.getSource();
+						useDigits = btn.getSelection();
+						System.out.println("Keep Digits:" + useDigits);
+					}
+				});
+
 				Button checkBox = new Button(dialog, SWT.CHECK);
 				checkBox.setText("Split Identifiers");
 				checkBox.addSelectionListener(new SelectionAdapter() {
@@ -157,7 +168,7 @@ public class EcliasView extends ViewPart {
 						System.out.println("Use Split Identifiers:" + useSplitIdentifiers);
 					}
 				});
-				
+
 				Button checkBox4 = new Button(dialog, SWT.CHECK);
 				checkBox4.setText("Keep the Original (Compound) identifiers");
 				checkBox4.addSelectionListener(new SelectionAdapter() {
@@ -168,7 +179,7 @@ public class EcliasView extends ViewPart {
 						System.out.println("Original identifiers:" + useOriginal);
 					}
 				});
-				
+
 				Button checkBox1 = new Button(dialog, SWT.CHECK);
 				checkBox1.setText("Use Stop Words");
 				checkBox1.addSelectionListener(new SelectionAdapter() {
@@ -189,16 +200,6 @@ public class EcliasView extends ViewPart {
 						System.out.println("Use porter stemmer:" + usePorterStemmer);
 					}
 				});
-				Button checkBox3 = new Button(dialog, SWT.CHECK);
-				checkBox3.setText("Use Lower Case Filter");
-				checkBox3.addSelectionListener(new SelectionAdapter() {
-					@Override
-					public void widgetSelected(SelectionEvent event) {
-						Button btn = (Button) event.getSource();
-						useLowerCase = btn.getSelection();
-						System.out.println("Original identifiers:" + useLowerCase);
-					}
-				});
 
 				Button ok = new Button(dialog, SWT.PUSH);
 				ok.setText("OK");
@@ -212,7 +213,7 @@ public class EcliasView extends ViewPart {
 				checkBox4.setSelection(useOriginal);
 				checkBox1.setSelection(useStopWords);
 				checkBox2.setSelection(usePorterStemmer);
-				checkBox3.setSelection(useLowerCase);
+				checkBox3.setSelection(useDigits);
 
 				dialog.setText("Choose Indexing Options");
 				dialog.pack();
@@ -300,7 +301,7 @@ public class EcliasView extends ViewPart {
 				table.removeAll();
 				useStopWords = false;
 				usePorterStemmer = false;
-				useLowerCase = false;
+				useDigits = false;
 				useOriginal = false;
 				useSplitIdentifiers = false;
 			}
