@@ -2,8 +2,10 @@ package org.plugin.eclias.downloadGitCommits;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,15 +15,17 @@ import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 public class MainDownloadGitCommits2 {
 
-	public static void main(String[] args) throws IOException, IllegalStateException, GitAPIException {
+	public static void main(String[] args) throws Exception {
 
 		File localPath = File.createTempFile("JGitTestRepository", "");
 		// delete repository before running this
@@ -74,6 +78,8 @@ public class MainDownloadGitCommits2 {
 						}
 					}
 
+				
+							
 					if (foundInThisBranch) {
 							String rThree = commit.getName();
 							String r3= "a4372ba771fe438a41a006bc04093c8dc05f7309";
@@ -94,6 +100,7 @@ public class MainDownloadGitCommits2 {
 						System.out.println(new Date(commit.getCommitTime() * 1000L));
 
 						System.out.println(commit.getFullMessage());
+						
 					}
 
 //                Iterable<RevCommit> log = git.log().call();
@@ -135,6 +142,18 @@ public class MainDownloadGitCommits2 {
 			// Find the head for the repository
 			ObjectId lastCommitId = git.getRepository().resolve(Constants.HEAD);
 			System.out.println("Head points to the following commit :" + lastCommitId.getName());
+			
+//			DownloadGitCommits.initializeRepository("https://github.com/vasanthgeethanraju/Gray_Hat_Python.git");
+			String outputFolder ="/Users/Vasanth/git/eCLIAS/GIT_metadata/";
+
+			File newDirectory = new File(outputFolder);
+			newDirectory.mkdirs();
+
+			DownloadGitCommits downloadGitCommits = new DownloadGitCommits("http://argouml.tigris.org/svn/argouml/trunk", "12345", "12348",
+					outputFolder, "guest", "");
+			
+//			DownloadGitCommits.downloadGitCommits();
+			System.out.println("downloadrepositoryover");
 		}
 
 	}

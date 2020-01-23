@@ -28,3 +28,5 @@ hs_err_pid*
 indexedFiles/
 zconsoleoutput.txt
 SVN_metadata/
+GIT_metadata/
+clonedrepo/

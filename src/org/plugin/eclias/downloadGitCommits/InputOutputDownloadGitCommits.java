@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNLogEntryPath;
 
@@ -11,53 +12,53 @@ public class InputOutputDownloadGitCommits {
 	public static final String LINE_ENDING = "\r\n";
 	public static String[] listOfValidExtensions = new String[] { ".java", ".txt", ".xml", ".html", ".htm" };
 
-	public static final String FOLDER_NAME_SVN_FILES_SIDE_BY_SIDE = "GitFilesSideBySide/";
-	public static final String FOLDER_NAME_SVN_COMMENTS = "GitComments/";
-	public static final String FOLDER_NAME_SVN_LIST_OF_FILES = "GitListOfFiles/";
-	public static final String FOLDER_NAME_SVN_DEBUG = "GitDebug/";
-	public static final String FILE_NAME_LIST_OF_SVN_COMMITS = "listOfGitCommits.txt";
-	public static final String FILE_NAME_LIST_OF_SVN_COMMITS_DEBUG = FOLDER_NAME_SVN_DEBUG
-			+ "listOfSVNCommitsDebug.txt";
+	public static final String FOLDER_NAME_GIT_FILES_SIDE_BY_SIDE = "GitFilesSideBySide/";
+	public static final String FOLDER_NAME_GIT_COMMENTS = "GitComments/";
+	public static final String FOLDER_NAME_GIT_LIST_OF_FILES = "GitListOfFiles/";
+	public static final String FOLDER_NAME_GIT_DEBUG = "GitDebug/";
+	public static final String FILE_NAME_LIST_OF_GIT_COMMITS = "listOfGitCommits.txt";
+	public static final String FILE_NAME_LIST_OF_GIT_COMMITS_DEBUG = FOLDER_NAME_GIT_DEBUG
+			+ "listOfGITCommitsDebug.txt";
 
-	private String outputFolder;
+	private static String outputFolder;
 
 	public InputOutputDownloadGitCommits(String outputFolder) {
-		this.outputFolder = outputFolder;
+		InputOutputDownloadGitCommits.outputFolder = outputFolder;
 	}
 
-	public String getFolderNameSVNFilesSideBySide() {
-		return outputFolder + FOLDER_NAME_SVN_FILES_SIDE_BY_SIDE;
+	public static String getFolderNameGitFilesSideBySide() {
+		return outputFolder + FOLDER_NAME_GIT_FILES_SIDE_BY_SIDE;
 	}
 
-	public String getFolderNameSVNComments() {
-		return outputFolder + FOLDER_NAME_SVN_COMMENTS;
+	public static String getFolderNameGitComments() {
+		return outputFolder + FOLDER_NAME_GIT_COMMENTS;
 	}
 
-	public String getFolderNameSVNListOfFiles() {
-		return outputFolder + FOLDER_NAME_SVN_LIST_OF_FILES;
+	public static String getFolderNameGitListOfFiles() {
+		return outputFolder + FOLDER_NAME_GIT_LIST_OF_FILES;
 	}
 
-	public String getFolderNameSVNDebug() {
-		return outputFolder + FOLDER_NAME_SVN_DEBUG;
+	public static String getFolderNameGitDebug() {
+		return outputFolder + FOLDER_NAME_GIT_DEBUG;
 	}
 
-	public String getFileNameListOfSVNCommits() {
-		return outputFolder + FILE_NAME_LIST_OF_SVN_COMMITS;
+	public String getFileNameListOfGitCommits() {
+		return outputFolder + FILE_NAME_LIST_OF_GIT_COMMITS;
 	}
 
-	public String getFileNameListOfSVNCommitsDebug() {
-		return outputFolder + FILE_NAME_LIST_OF_SVN_COMMITS_DEBUG;
+	public String getFileNameListOfGitCommitsDebug() {
+		return outputFolder + FILE_NAME_LIST_OF_GIT_COMMITS_DEBUG;
 	}
 
 	public void initializeFolderStructure() throws Exception {
 		createFolder(outputFolder);
-		createFolder(getFolderNameSVNFilesSideBySide());
-		createFolder(getFolderNameSVNComments());
-		createFolder(getFolderNameSVNListOfFiles());
-		createFolder(getFolderNameSVNDebug());
+		createFolder(getFolderNameGitFilesSideBySide());
+		createFolder(getFolderNameGitComments());
+		createFolder(getFolderNameGitListOfFiles());
+		createFolder(getFolderNameGitDebug());
 	}
 
-	private void createFolder(String folderName) throws Exception {
+	private static void createFolder(String folderName) throws Exception {
 		File folder = new File(folderName);
 		if (folder.exists())
 			return;
@@ -66,12 +67,12 @@ public class InputOutputDownloadGitCommits {
 			throw new Exception();
 	}
 
-	public void clearListOfSVNCommits() throws Exception {
-		BufferedWriter outputFile = new BufferedWriter(new FileWriter(getFileNameListOfSVNCommits()));
+	public void clearListOfGitCommits() throws Exception {
+		BufferedWriter outputFile = new BufferedWriter(new FileWriter(getFileNameListOfGitCommits()));
 		outputFile.write("");
 		outputFile.close();
 
-		outputFile = new BufferedWriter(new FileWriter(getFileNameListOfSVNCommitsDebug()));
+		outputFile = new BufferedWriter(new FileWriter(getFileNameListOfGitCommitsDebug()));
 		outputFile.write("");
 		outputFile.close();
 	}
@@ -94,47 +95,47 @@ public class InputOutputDownloadGitCommits {
 		outputFile.close();
 	}
 
-	public void saveSVNComments(SVNLogEntry svnLogEntry) throws Exception {
-		saveFile(getFolderNameSVNComments() + svnLogEntry.getRevision() + ".SVNComment", svnLogEntry.getMessage());
+	public void saveGitComments(RevCommit gitLogEntry) throws Exception {
+		saveFile(getFolderNameGitComments() + gitLogEntry.getName() + ".GITComment", gitLogEntry.getFullMessage());
 	}
 
-	public void saveListOfFiles(SVNLogEntry svnLogEntry, String listOfFiles) throws Exception {
-		saveFileWithoutLineEnding(getFolderNameSVNListOfFiles() + svnLogEntry.getRevision() + ".SVNListOfFiles",
+	public void saveListOfFiles(RevCommit gitLogEntry, String listOfFiles) throws Exception {
+		saveFileWithoutLineEnding(getFolderNameGitListOfFiles() + gitLogEntry.getName() + ".GITListOfFiles",
 				listOfFiles);
 	}
 
-	public void saveSVNDebugInformation(SVNLogEntry svnLogEntry, String debugInformation) throws Exception {
-		saveFile(getFolderNameSVNDebug() + svnLogEntry.getRevision() + ".SVNDebug", debugInformation);
+	public void saveGitDebugInformation(SVNLogEntry gitLogEntry, String debugInformation) throws Exception {
+		saveFile(getFolderNameGitDebug() + gitLogEntry.getRevision() + ".GITDebug", debugInformation);
 	}
 
-	public void createRevisionFolderInFolderSideBySideFiles(SVNLogEntry svnLogEntry) throws Exception {
-		createFolder(getFolderNameSVNFilesSideBySide() + svnLogEntry.getRevision() + "/");
+	public void createRevisionFolderInFolderSideBySideFiles(RevCommit gitLogEntry) throws Exception {
+		createFolder(getFolderNameGitFilesSideBySide() + gitLogEntry.getName() + "/");
 	}
 
-	public String SVNLogEntryPathToString(SVNLogEntryPath svnLogEntryPath) {
-		return svnLogEntryPath.getType() + "\t" + getFileNameOnDisk(svnLogEntryPath.getPath());
+	public String GITLogEntryPathToString(SVNLogEntryPath gitLogEntryPath) {
+		return gitLogEntryPath.getType() + "\t" + getFileNameOnDisk(gitLogEntryPath.getPath());
 	}
 
-	public String SVNLogEntryToStringDebug(SVNLogEntry svnLogEntry) {
+	public String GITLogEntryToStringDebug(SVNLogEntry gitLogEntry) {
 		StringBuilder buf = new StringBuilder();
-		buf.append("Revision: " + svnLogEntry.getRevision() + LINE_ENDING);
-		buf.append("Author: " + svnLogEntry.getAuthor() + LINE_ENDING);
-		buf.append("Date: " + svnLogEntry.getDate() + LINE_ENDING);
+		buf.append("Revision: " + gitLogEntry.getRevision() + LINE_ENDING);
+		buf.append("Author: " + gitLogEntry.getAuthor() + LINE_ENDING);
+		buf.append("Date: " + gitLogEntry.getDate() + LINE_ENDING);
 		buf.append("Log:" + LINE_ENDING);
-		buf.append(svnLogEntry.getMessage().replace("\n", " ").replace("\r", " ") + LINE_ENDING + LINE_ENDING);
+		buf.append(gitLogEntry.getMessage().replace("\n", " ").replace("\r", " ") + LINE_ENDING + LINE_ENDING);
 
 		buf.append("List of files:" + LINE_ENDING);
 
 		return buf.toString();
 	}
 
-	public String SVNLogEntryPathToStringDebug(SVNLogEntryPath svnLogEntryPath) {
+	public String GITLogEntryPathToStringDebug(SVNLogEntryPath gitLogEntryPath) {
 		StringBuilder buf = new StringBuilder();
-		buf.append(" " + svnLogEntryPath.getType() + " " + svnLogEntryPath.getPath());
-		if (svnLogEntryPath.getCopyPath() != null)
-			buf.append(" (from " + svnLogEntryPath.getCopyPath() + ":" + svnLogEntryPath.getCopyRevision() + ")");
+		buf.append(" " + gitLogEntryPath.getType() + " " + gitLogEntryPath.getPath());
+		if (gitLogEntryPath.getCopyPath() != null)
+			buf.append(" (from " + gitLogEntryPath.getCopyPath() + ":" + gitLogEntryPath.getCopyRevision() + ")");
 
-		buf.append(" - (" + svnLogEntryPath.getKind() + ")");
+		buf.append(" - (" + gitLogEntryPath.getKind() + ")");
 		return buf.toString();
 	}
 
@@ -151,21 +152,21 @@ public class InputOutputDownloadGitCommits {
 	}
 
 	public String getFileNameCurrentVersion(String fileNameOnRepository, long revision) {
-		return getFolderNameSVNFilesSideBySide() + revision + "/" + getFileNameOnDisk(fileNameOnRepository) + ".v"
+		return getFolderNameGitFilesSideBySide() + revision + "/" + getFileNameOnDisk(fileNameOnRepository) + ".v"
 				+ revision;
 
 	}
 
 	public String getFileNamePreviousVersion(String fileNameOnRepository, long revision) {
-		return getFolderNameSVNFilesSideBySide() + revision + "/" + getFileNameOnDisk(fileNameOnRepository)
+		return getFolderNameGitFilesSideBySide() + revision + "/" + getFileNameOnDisk(fileNameOnRepository)
 				+ ".vPrevious";
 	}
 
-	public void appendToListOfSVNCommits(SVNLogEntry svnLogEntry) throws Exception {
-		appendToFile(getFileNameListOfSVNCommits(), svnLogEntry.getRevision() + "");
+	public void appendToListOfGitCommits(RevCommit gitLogEntry) throws Exception {
+		appendToFile(getFileNameListOfGitCommits(), gitLogEntry.getName() + "");
 	}
 
-	public void appendToListOfSVNCommitsDebug(SVNLogEntry svnLogEntry) throws Exception {
-		appendToFile(getFileNameListOfSVNCommitsDebug(), svnLogEntry.getRevision() + "");
+	public void appendToListOfGITCommitsDebug(SVNLogEntry gitLogEntry) throws Exception {
+		appendToFile(getFileNameListOfGitCommitsDebug(), gitLogEntry.getRevision() + "");
 	}
 }

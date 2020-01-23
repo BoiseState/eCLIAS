@@ -7,7 +7,7 @@ public class MainDownloadGitCommits {
 	public static void testDownloadGitCommits(String repoAddress, String startRevision, String endRevision)
 			throws Exception {
 
-		String outputFolder = System.getProperty("user.dir") + "/GIT_metadata/";
+		String outputFolder = "/Users/Vasanth/git/eCLIAS/GIT_metadata/";
 
 		File newDirectory = new File(outputFolder);
 		newDirectory.mkdirs();
@@ -15,8 +15,8 @@ public class MainDownloadGitCommits {
 		DownloadGitCommits downloadGitCommits = new DownloadGitCommits(repoAddress, startRevision, endRevision,
 				outputFolder, "guest", "");
 
-		downloadGitCommits.initializeRepository();
-		downloadGitCommits.downloadSVNCommits();
+		downloadGitCommits.initializeRepository(repoAddress);
+		downloadGitCommits.downloadGitCommits();
 
 		System.out.println("The data has been saved in the folder: " + outputFolder);
 	}
