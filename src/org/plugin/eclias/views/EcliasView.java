@@ -5,10 +5,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.*;
-import org.plugin.eclias.index.LuceneWriteIndexFromFile;
-import org.plugin.eclias.index.LuceneWriteIndexFromFile.Score;
-import org.plugin.eclias.index.StartMSRAction;
-import org.eclipse.jface.action.IToolBarManager;
+import org.plugin.eclias.index.LuceneIndexer;
+import org.plugin.eclias.index.LuceneIndexer.Score;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -119,8 +117,8 @@ public class EcliasView extends ViewPart {
 		gridLayout.numColumns = 1;
 		parent.setLayout(gridLayout);
 
-		IActionBars lBars = getViewSite().getActionBars();
-		fillLocalToolBar(lBars.getToolBarManager());
+//		IActionBars lBars = getViewSite().getActionBars();
+//		fillLocalToolBar(lBars.getToolBarManager());
 //		fillToolBarMenu(lBars.getMenuManager());
 
 		queryComposite = new Composite(parent, SWT.PUSH);
@@ -233,16 +231,8 @@ public class EcliasView extends ViewPart {
 //				startSearch();
 
 				try {
-					LuceneWriteIndexFromFile.index();
-					ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
-
-//					MainCorpusGenerator mcg = new MainCorpusGenerator();
-//					mcg.main(null);
-//					System.out.println("Corpus Generated");
-//					MainCorpusPreprocessor mcp = new MainCorpusPreprocessor();
-//					mcp.main(null);
-//					System.out.println("Preprocessing Generated");
-//					MessageDialog.openInformation(shell, "Eclias", "Corpus Extracted and Indexed for the following projects:");
+					LuceneIndexer.index();
+					ArrayList<Score> s = LuceneIndexer.search(queryText.getText());
 
 					for (Score sc : s) {
 						resultsLabel.setText(sc.getHits());
@@ -261,7 +251,7 @@ public class EcliasView extends ViewPart {
 							setFocus();
 
 							try {
-								ArrayList<Score> s = LuceneWriteIndexFromFile.search(queryText.getText());
+								ArrayList<Score> s = LuceneIndexer.search(queryText.getText());
 								for (Score sc : s) {
 
 									if (classname.equals(sc.getClassName()) && methodname.equals(sc.getMethodName())) {
@@ -350,11 +340,11 @@ public class EcliasView extends ViewPart {
 		viewer.getControl().setFocus();
 	}
 
-	private void fillLocalToolBar(IToolBarManager pManager) {
-
-		pManager.add(new StartMSRAction());
-
-		// TODO: ADD MSR button right here
-	}
+//	private void fillLocalToolBar(IToolBarManager pManager) {
+//
+//		pManager.add(new StartMSRAction());
+//
+//		// TODO: ADD MSR button right here
+//	}
 
 }

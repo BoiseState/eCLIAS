@@ -7,11 +7,12 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
-public class IRUtil {
+public class IndexingOptions {
 
 	public static String FILE_NAME_LIST_OF_STOP_WORDS = System.getProperty("user.dir") + "/stopWords/StopWords.txt";
 
 //	static QueryParser parser = new QueryParser("contents", LuceneWriteIndexFromFile.getAnalyzer());
+	
 	static HashMap<String, String> stemCache = new HashMap<>();
 
 //	public static boolean doTokensMatch(String s1, String s2) throws ParseException {

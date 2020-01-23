@@ -43,7 +43,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.plugin.eclias.views.EcliasView;
 
-public class LuceneWriteIndexFromFile {
+public class LuceneIndexer {
 	static HashMap<IMethod, Method> methods = new HashMap<IMethod, Method>();
 	static HashMap<String, IMethod> methodMap = new HashMap<String, IMethod>();
 	static HashMap<String, IMethod> methodIDMap = new HashMap<String, IMethod>();
@@ -189,22 +189,22 @@ public class LuceneWriteIndexFromFile {
 			method.getOpenable().open(new NullProgressMonitor());
 			source = method.getSource();
 			if (source != null) {
-				source = IRUtil.eliminateNonLiterals(source, EcliasView.useDigits);
+				source = IndexingOptions.eliminateNonLiterals(source, EcliasView.useDigits);
 
 				if (EcliasView.useDigits) {
-					source = IRUtil.eliminateNonLiterals(source, EcliasView.useDigits);
+					source = IndexingOptions.eliminateNonLiterals(source, EcliasView.useDigits);
 				}
 
 				if (EcliasView.useSplitIdentifiers) {
-					source = IRUtil.splitIdentifiers(source, EcliasView.useOriginal);
+					source = IndexingOptions.splitIdentifiers(source, EcliasView.useOriginal);
 				}
 
 				if (EcliasView.useStopWords) {
-					source = IRUtil.elimiateStopWords(source, 1);
+					source = IndexingOptions.elimiateStopWords(source, 1);
 				}
 
 				if (EcliasView.usePorterStemmer) {
-					source = IRUtil.stemBuffer(source);
+					source = IndexingOptions.stemBuffer(source);
 
 				}
 
@@ -223,33 +223,13 @@ public class LuceneWriteIndexFromFile {
 		}
 	}
 
-//	static CharArraySet getStopWords() {
-//		String[] JAVA_STOP_WORDS = { "public", "private", "protected", "interface", "abstract", "implements", "extends",
-//				"null", "new", "switch", "case", "default", "synchronized", "do", "if", "else", "break", "continue",
-//				"this", "assert", "for", "instanceof", "transient", "final", "static", "void", "catch", "try", "throws",
-//				"throw", "class", "finally", "return", "const", "native", "super", "while", "import", "package", "true",
-//				"false", "but", "does", "shouldn't", "aren't", "are", "should", "such", "they", "how" };
-//		HashSet<String> javaStopWords = new HashSet<String>();
-//		javaStopWords.addAll(Arrays.asList(JAVA_STOP_WORDS));
-//		CharArraySet allStopWords = new CharArraySet(javaStopWords, false);
-//		allStopWords.addAll(StopAnalyzer.ENGLISH_STOP_WORDS_SET);
-//		return allStopWords;
-//	}
-
-//	static Analyzer getAnalyzer() {
-//		if (analyzer == null) {
-//			analyzer = new EnglishAnalyzer(getStopWords());
-//		}
-//		return analyzer;
-//	}
-
 	static IndexReader getIndexReader() {
 		return reader;
 	}
 
 	static Integer getDocNum(IMethod iMethod) throws IOException {
-		for (int docNum = 0; docNum < LuceneWriteIndexFromFile.getIndexReader().maxDoc(); docNum++) {
-			String id = LuceneWriteIndexFromFile.getIndexReader().document(docNum).get("nodeHandlerID");
+		for (int docNum = 0; docNum < LuceneIndexer.getIndexReader().maxDoc(); docNum++) {
+			String id = LuceneIndexer.getIndexReader().document(docNum).get("nodeHandlerID");
 			if (id.equals(iMethod.getHandleIdentifier())) {
 				return docNum;
 			}
@@ -333,7 +313,7 @@ public class LuceneWriteIndexFromFile {
 
 		// Create search query
 		QueryParser qp = new QueryParser("contents", new StandardAnalyzer());
-		textToFind = IRUtil.splitAndMergeCamelCase(textToFind);
+		textToFind = IndexingOptions.splitAndMergeCamelCase(textToFind);
 		Query query = qp.parse(QueryParserUtil.escape(textToFind));
 
 		// search the index
