@@ -3,9 +3,9 @@ package org.plugin.eclias.downloadGitCommits;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Date;
 
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNLogEntryPath;
 
 public class InputOutputDownloadGitCommits {
@@ -104,8 +104,8 @@ public class InputOutputDownloadGitCommits {
 				listOfFiles);
 	}
 
-	public void saveGitDebugInformation(SVNLogEntry gitLogEntry, String debugInformation) throws Exception {
-		saveFile(getFolderNameGitDebug() + gitLogEntry.getRevision() + ".GITDebug", debugInformation);
+	public void saveGitDebugInformation(RevCommit gitLogEntry, String debugInformation) throws Exception {
+		saveFile(getFolderNameGitDebug() + gitLogEntry.getName() + ".GITDebug", debugInformation);
 	}
 
 	public void createRevisionFolderInFolderSideBySideFiles(RevCommit gitLogEntry) throws Exception {
@@ -116,26 +116,26 @@ public class InputOutputDownloadGitCommits {
 		return gitLogEntryPath.getType() + "\t" + getFileNameOnDisk(gitLogEntryPath.getPath());
 	}
 
-	public String GITLogEntryToStringDebug(SVNLogEntry gitLogEntry) {
+	public String GITLogEntryToStringDebug(RevCommit gitLogEntry) {
 		StringBuilder buf = new StringBuilder();
-		buf.append("Revision: " + gitLogEntry.getRevision() + LINE_ENDING);
-		buf.append("Author: " + gitLogEntry.getAuthor() + LINE_ENDING);
-		buf.append("Date: " + gitLogEntry.getDate() + LINE_ENDING);
+		buf.append("Revision: " + gitLogEntry.getName() + LINE_ENDING);
+		buf.append("Author: " + gitLogEntry.getAuthorIdent().getName() + LINE_ENDING);
+		buf.append("Date: " + (new Date(gitLogEntry.getCommitTime() * 1000L)) + LINE_ENDING);
 		buf.append("Log:" + LINE_ENDING);
-		buf.append(gitLogEntry.getMessage().replace("\n", " ").replace("\r", " ") + LINE_ENDING + LINE_ENDING);
+		buf.append(gitLogEntry.getFullMessage().replace("\n", " ").replace("\r", " ") + LINE_ENDING + LINE_ENDING);
 
 		buf.append("List of files:" + LINE_ENDING);
 
 		return buf.toString();
 	}
 
-	public String GITLogEntryPathToStringDebug(SVNLogEntryPath gitLogEntryPath) {
+	public String GITLogEntryPathToStringDebug(RevCommit gitLogEntryPath) {
 		StringBuilder buf = new StringBuilder();
-		buf.append(" " + gitLogEntryPath.getType() + " " + gitLogEntryPath.getPath());
-		if (gitLogEntryPath.getCopyPath() != null)
-			buf.append(" (from " + gitLogEntryPath.getCopyPath() + ":" + gitLogEntryPath.getCopyRevision() + ")");
+		buf.append(" " + gitLogEntryPath.getType() + " " + gitLogEntryPath.getTree());
+		if (gitLogEntryPath.getTree() != null)
+			buf.append(" (from " + gitLogEntryPath.getTree() + ":" + gitLogEntryPath.getName() + ")");
 
-		buf.append(" - (" + gitLogEntryPath.getKind() + ")");
+		buf.append(" - (" + gitLogEntryPath.getAuthorIdent().getName() + ")");
 		return buf.toString();
 	}
 
@@ -166,7 +166,7 @@ public class InputOutputDownloadGitCommits {
 		appendToFile(getFileNameListOfGitCommits(), gitLogEntry.getName() + "");
 	}
 
-	public void appendToListOfGITCommitsDebug(SVNLogEntry gitLogEntry) throws Exception {
-		appendToFile(getFileNameListOfGitCommitsDebug(), gitLogEntry.getRevision() + "");
+	public void appendToListOfGitCommitsDebug(RevCommit gitLogEntry) throws Exception {
+		appendToFile(getFileNameListOfGitCommitsDebug(), gitLogEntry.getName() + "");
 	}
 }

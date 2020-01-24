@@ -20,7 +20,7 @@ public class DownloadGitCommits {
 	private String username;
 	private String password;
 	private SVNRepository repository;
-	public InputOutputDownloadGitCommits inputOutput;
+	public static InputOutputDownloadGitCommits inputOutput;
 	public static String cloneAddress = System.getProperty("user.dir") + "/clonedrepo/";
 
 	DownloadGitCommits(String url, String startRevision, String endRevision, String outputFolder, String username,
@@ -42,9 +42,10 @@ public class DownloadGitCommits {
 		Git git = Git.cloneRepository().setURI(url).setDirectory(newDirectory).call();
 	}
 
-	void downloadGitCommits() throws Exception {
+	static void downloadGitCommits() throws Exception {
 		inputOutput.initializeFolderStructure();
 		inputOutput.clearListOfGitCommits();
+		String gitLogEntryPathDebug = "";
 
 		try (Git git = Git.open(new File(cloneAddress))) {
 			Repository repository = git.getRepository();
@@ -65,6 +66,7 @@ public class DownloadGitCommits {
 				Iterable<RevCommit> commits = git.log().all().call();
 
 				for (RevCommit commit : commits) {
+
 					boolean foundInThisBranch = false;
 
 					RevCommit targetCommit = walk.parseCommit(repository.resolve(commit.getName()));
@@ -81,8 +83,20 @@ public class DownloadGitCommits {
 					}
 
 					if (foundInThisBranch) {
-						inputOutput.appendToListOfGitCommits(commit);
+//						inputOutput.createRevisionFolderInFolderSideBySideFiles(commit);
+
+						String debugInformation = inputOutput.GITLogEntryToStringDebug(commit);
+//						System.out.println(debugInformation);
 						inputOutput.saveGitComments(commit);
+
+						gitLogEntryPathDebug = inputOutput.GITLogEntryPathToStringDebug(commit);
+						debugInformation += gitLogEntryPathDebug + inputOutput.LINE_ENDING;
+//						System.out.println(gitLogEntryPathDebug);
+
+						inputOutput.saveGitDebugInformation(commit, debugInformation);
+						inputOutput.appendToListOfGitCommitsDebug(commit);
+
+						inputOutput.appendToListOfGitCommits(commit);
 					}
 
 				}
