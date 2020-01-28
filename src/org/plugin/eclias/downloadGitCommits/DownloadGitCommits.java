@@ -6,11 +6,19 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
+import org.gitective.core.BlobUtils;
 import org.tmatesoft.svn.core.io.SVNRepository;
 
 public class DownloadGitCommits {
@@ -20,7 +28,7 @@ public class DownloadGitCommits {
 	private String username;
 	private String password;
 	private SVNRepository repository;
-	public static InputOutputDownloadGitCommits inputOutput;
+	public InputOutputDownloadGitCommits inputOutput;
 	public static String cloneAddress = System.getProperty("user.dir") + "/clonedrepo/";
 
 	DownloadGitCommits(String url, String startRevision, String endRevision, String outputFolder, String username,
@@ -42,7 +50,7 @@ public class DownloadGitCommits {
 		Git git = Git.cloneRepository().setURI(url).setDirectory(newDirectory).call();
 	}
 
-	static void downloadGitCommits() throws Exception {
+	void downloadGitCommits() throws Exception {
 		inputOutput.initializeFolderStructure();
 		inputOutput.clearListOfGitCommits();
 		String gitLogEntryPathDebug = "";
@@ -81,30 +89,63 @@ public class DownloadGitCommits {
 							}
 						}
 					}
+					RevTree treeId = commit.getTree();
+					TreeWalk treeWalk = new TreeWalk(repository);
+					treeWalk.reset(treeId);
+					ObjectId head = repository.resolve(Constants.HEAD);
+//					ObjectId penultimate = head.
+					RevCommit commit1 = walk.parseCommit(head);
+					RevCommit parentCommit = walk.parseCommit(commit1.getParent(0).getId());
 
-					if (foundInThisBranch) {
-//						inputOutput.createRevisionFolderInFolderSideBySideFiles(commit);
+					DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
+					df.setRepository(repository);
+					df.setDiffComparator(RawTextComparator.DEFAULT);
+					df.setDetectRenames(true);
+					List<DiffEntry> diffs = df.scan(parentCommit.getTree(), commit1.getTree());
+					for (DiffEntry diff : diffs) {
 
-						String debugInformation = inputOutput.GITLogEntryToStringDebug(commit);
+						if (foundInThisBranch) {
+							inputOutput.createRevisionFolderInFolderSideBySideFiles(commit);
+
+							String append = "";
+//							String fileappend = "";
+							StringBuilder buf = new StringBuilder();
+							while (treeWalk.next()) {
+								String path = treeWalk.getPathString();
+								System.out.println("File modified/changed is:" + path);
+								append = append.concat(diff.getChangeType().name().substring(0, 1)).concat("\t")
+										.concat(path).concat("\n");
+//								String fileNameOnRepository = BlobUtils.getHeadContent(repository, diff.getOldPath());
+////								String fileNameOnRepository1 = BlobUtils.getContent(repository, parentCommit, diff.getNewPath());
+//								buf.append(fileNameOnRepository);
+//							fileappend = fileappend.concat(fileNameOnRepository);
+//								System.out.println(fileNameOnRepository);
+							}
+							System.out.println(buf);
+
+							inputOutput.saveListOfFiles(commit, append);
+							String debugInformation = inputOutput.GITLogEntryToStringDebug(commit);
 //						System.out.println(debugInformation);
-						inputOutput.saveGitComments(commit);
+							inputOutput.saveGitComments(commit);
 
-						gitLogEntryPathDebug = inputOutput.GITLogEntryPathToStringDebug(commit);
-						debugInformation += gitLogEntryPathDebug + inputOutput.LINE_ENDING;
+							gitLogEntryPathDebug = inputOutput.GITLogEntryPathToStringDebug(commit);
+							debugInformation += gitLogEntryPathDebug + inputOutput.LINE_ENDING;
 //						System.out.println(gitLogEntryPathDebug);
 
-						inputOutput.saveGitDebugInformation(commit, debugInformation);
-						inputOutput.appendToListOfGitCommitsDebug(commit);
+							inputOutput.saveGitDebugInformation(commit, debugInformation);
+							inputOutput.appendToListOfGitCommitsDebug(commit);
 
-						inputOutput.appendToListOfGitCommits(commit);
+							inputOutput.appendToListOfGitCommits(commit);
+						}
+
 					}
-
 				}
 			}
 		}
 
 		catch (Exception e) {
 			System.out.println("error");
+			e.printStackTrace();
 		}
 
 	}

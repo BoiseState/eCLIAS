@@ -58,7 +58,7 @@ public class GitHandler extends AbstractHandler {
 		resultsLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		repoAddress = new StyledText(dialog, SWT.SINGLE | SWT.BORDER);
 		repoAddress.setLayoutData(queryGridData);
-		repoAddress.setText("http://argouml.tigris.org/svn/argouml/trunk");
+		repoAddress.setText("https://github.com/vasanthgeethanraju/SVNkit.git");
 
 		Label resultsLabel1 = new Label(dialog, SWT.PUSH);
 		resultsLabel1.setText("Start Revision");
@@ -93,7 +93,7 @@ public class GitHandler extends AbstractHandler {
 				}
 				dialog.close();
 				MessageDialog.openInformation(shell, "GIT Options",
-						"The data has been saved in the folder:" + MainGoldSetsGeneratorFromSVNCommits.outputFolder);
+						"The data has been saved in the folder:" + MainDownloadGitCommits.outputFolder);
 			}
 		};
 		ok.addListener(SWT.Selection, listener);
