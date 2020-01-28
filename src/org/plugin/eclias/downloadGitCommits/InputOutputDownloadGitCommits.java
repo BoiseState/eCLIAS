@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.Date;
 
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.tmatesoft.svn.core.SVNLogEntryPath;
 
@@ -112,8 +114,8 @@ public class InputOutputDownloadGitCommits {
 		createFolder(getFolderNameGitFilesSideBySide() + gitLogEntry.getName() + "/");
 	}
 
-	public String GITLogEntryPathToString(SVNLogEntryPath gitLogEntryPath) {
-		return gitLogEntryPath.getType() + "\t" + getFileNameOnDisk(gitLogEntryPath.getPath());
+	public String GITLogEntryPathToString(DiffEntry gitLogEntryPath) {
+		return gitLogEntryPath.getChangeType().name() + "\t" + getFileNameOnDisk(gitLogEntryPath.getNewPath());
 	}
 
 	public String GITLogEntryToStringDebug(RevCommit gitLogEntry) {
@@ -151,14 +153,14 @@ public class InputOutputDownloadGitCommits {
 		return false;
 	}
 
-	public String getFileNameCurrentVersion(String fileNameOnRepository, long revision) {
-		return getFolderNameGitFilesSideBySide() + revision + "/" + getFileNameOnDisk(fileNameOnRepository) + ".v"
-				+ revision;
+	public String getFileNameCurrentVersion(String fileNameOnRepository, String string) {
+		return getFolderNameGitFilesSideBySide() + string + "/" + getFileNameOnDisk(fileNameOnRepository) + ".v"
+				+ string;
 
 	}
 
-	public String getFileNamePreviousVersion(String fileNameOnRepository, long revision) {
-		return getFolderNameGitFilesSideBySide() + revision + "/" + getFileNameOnDisk(fileNameOnRepository)
+	public String getFileNamePreviousVersion(String fileNameOnRepository, String string) {
+		return getFolderNameGitFilesSideBySide() + string + "/" + getFileNameOnDisk(fileNameOnRepository)
 				+ ".vPrevious";
 	}
 
@@ -170,3 +172,5 @@ public class InputOutputDownloadGitCommits {
 		appendToFile(getFileNameListOfGitCommitsDebug(), gitLogEntry.getName() + "");
 	}
 }
+
+//String fileNameOnRepository1 = BlobUtils.getContent(repository, parentCommit, diff.getNewPath());
