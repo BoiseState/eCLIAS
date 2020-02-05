@@ -1,9 +1,7 @@
 package org.plugin.eclias.downloadGitCommits;
 
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +88,7 @@ public class DownloadGitCommits {
 							}
 						}
 					}
-					
+
 					RevTree treeId = commit.getTree();
 					TreeWalk treeWalk = new TreeWalk(repository);
 					treeWalk.reset(treeId);
@@ -110,7 +108,7 @@ public class DownloadGitCommits {
 //							System.out.println(debugInformation);
 
 							inputOutput.saveGitComments(commit);
-							
+
 							String listOfFiles = "";
 
 							inputOutput.createRevisionFolderInFolderSideBySideFiles(commit);
@@ -121,9 +119,9 @@ public class DownloadGitCommits {
 
 							String fileType = diff.getChangeType().name();
 							String fileNameOnRepository_old = diff.getOldPath();
-							System.out.println("old one is:" +fileNameOnRepository_old);
+							System.out.println("old one is:" + fileNameOnRepository_old);
 							String fileNameOnRepository_new = diff.getNewPath();
-							System.out.println("new one is:" +fileNameOnRepository_new);
+							System.out.println("new one is:" + fileNameOnRepository_new);
 							ObjectId revision = commit1;
 //							System.out.println("revision is:" +commit1);
 
@@ -131,18 +129,18 @@ public class DownloadGitCommits {
 								listOfFiles += inputOutput.GITLogEntryPathToString(diff) + inputOutput.LINE_ENDING;
 //								hasValidFiles = true;
 
-								System.out.println("File save to currentVersion "
-										+ inputOutput.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
-								saveFileFromRepository(fileNameOnRepository_new, revision,
-										inputOutput.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
+								System.out.println("File save to currentVersion " + inputOutput
+										.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
+								saveFileFromRepository(fileNameOnRepository_new, revision, inputOutput
+										.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
 
 								ObjectId revisionFrom = parentCommit;
 								if (fileNameOnRepository_old != null) {
 									System.out.println("File save to previousVersion " + inputOutput
 											.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
 									// save file "from" under new name
-									saveFileFromRepository(fileNameOnRepository_old, revisionFrom,
-											inputOutput.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
+									saveFileFromRepository(fileNameOnRepository_old, revisionFrom, inputOutput
+											.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
 								}
 
 								continue;
@@ -152,14 +150,14 @@ public class DownloadGitCommits {
 								listOfFiles += inputOutput.GITLogEntryPathToString(diff) + inputOutput.LINE_ENDING;
 //								hasValidFiles = true;
 
-								System.out.println("File save to currentVersion "
-										+ inputOutput.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
-								System.out.println("File save to previousVersion "
-										+ inputOutput.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
-								saveFileFromRepository(fileNameOnRepository_new, revision,
-										inputOutput.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
-								saveFileFromRepository(fileNameOnRepository_old, revision,
-										inputOutput.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
+								System.out.println("File save to currentVersion " + inputOutput
+										.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
+								System.out.println("File save to previousVersion " + inputOutput
+										.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
+								saveFileFromRepository(fileNameOnRepository_new, revision, inputOutput
+										.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
+								saveFileFromRepository(fileNameOnRepository_old, revision, inputOutput
+										.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
 
 //								continue;
 							}
@@ -171,18 +169,18 @@ public class DownloadGitCommits {
 //								if there is a text changed between previous version "from" and current version, then we should download the previous one as well. Otherwise, we don't need to
 
 								System.err.println("FILE REPLACED");
-								System.out.println("File save to currentVersion "
-										+ inputOutput.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
-								saveFileFromRepository(fileNameOnRepository_new, revision,
-										inputOutput.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
+								System.out.println("File save to currentVersion " + inputOutput
+										.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
+								saveFileFromRepository(fileNameOnRepository_new, revision, inputOutput
+										.getFileNameCurrentVersion(fileNameOnRepository_new, revision.getName()));
 
 								ObjectId revisionFrom = parentCommit;
 								if (fileNameOnRepository_old != null) {
 									System.out.println("File save to previousVersion " + inputOutput
 											.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
 									// save file "from" under new name
-									saveFileFromRepository(fileNameOnRepository_old, revisionFrom,
-											inputOutput.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
+									saveFileFromRepository(fileNameOnRepository_old, revisionFrom, inputOutput
+											.getFileNamePreviousVersion(fileNameOnRepository_old, revision.getName()));
 								}
 								continue;
 							}
@@ -191,7 +189,7 @@ public class DownloadGitCommits {
 								System.err.println("FILE DELETED");
 								continue;
 							}
-							
+
 							String append = "";
 
 							while (treeWalk.next()) {
@@ -210,9 +208,9 @@ public class DownloadGitCommits {
 						}
 
 					}
-					
+
 				}
-				
+
 			}
 		}
 
@@ -227,7 +225,7 @@ public class DownloadGitCommits {
 			throws Exception {
 
 		String content = BlobUtils.getContent(repository, revision, fileNameOnRepository);
-		
+
 		BufferedWriter outputFile = new BufferedWriter(new FileWriter(fileNameOnDisk));
 		outputFile.write(content);
 		outputFile.close();

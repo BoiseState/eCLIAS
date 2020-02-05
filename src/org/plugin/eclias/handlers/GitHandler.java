@@ -58,16 +58,16 @@ public class GitHandler extends AbstractHandler {
 		resultsLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		repoAddress = new StyledText(dialog, SWT.SINGLE | SWT.BORDER);
 		repoAddress.setLayoutData(queryGridData);
-		repoAddress.setText("https://github.com/vasanthgeethanraju/SVNkit.git");
+		repoAddress.setText("https://github.com/vasanthgeethanraju/SVNKit.git");
 
 		Label resultsLabel1 = new Label(dialog, SWT.PUSH);
-		resultsLabel1.setText("Start Revision");
+		resultsLabel1.setText("Start Commit");
 		resultsLabel1.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		startRevision = new StyledText(dialog, SWT.SINGLE | SWT.BORDER);
 		startRevision.setLayoutData(queryGridData);
 
 		Label resultsLabel2 = new Label(dialog, SWT.PUSH);
-		resultsLabel2.setText("End Revision");
+		resultsLabel2.setText("End Commit");
 		resultsLabel2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		endRevision = new StyledText(dialog, SWT.SINGLE | SWT.BORDER);
 		endRevision.setLayoutData(queryGridData);

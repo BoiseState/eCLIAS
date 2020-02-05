@@ -98,8 +98,9 @@ public class DownloadSVNCommits {
 
 			char fileType = svnLogEntryPath.getType();
 			String fileNameOnRepository = svnLogEntryPath.getPath();
+			System.out.println("filenameonRepo is:" +fileNameOnRepository);
 			long revision = svnLogEntry.getRevision();
-
+			System.out.println("revision is :" +revision);
 			if (inputOutput.hasValidFileExtension(fileNameOnRepository) == false) {
 				System.err.println("Invalid extension...");
 				continue;
@@ -121,7 +122,9 @@ public class DownloadSVNCommits {
 						inputOutput.getFileNameCurrentVersion(fileNameOnRepository, revision));
 
 				String fileNameOnRepositoryFrom = svnLogEntryPath.getCopyPath();
+				System.out.println("filenameonRepo from is:" +fileNameOnRepositoryFrom);
 				long revisionFrom = svnLogEntryPath.getCopyRevision();
+				System.out.println("revision from is:" +revisionFrom);
 				if (fileNameOnRepositoryFrom != null) {
 					System.out.println("File save to previousVersion "
 							+ inputOutput.getFileNamePreviousVersion(fileNameOnRepository, revision));
@@ -200,5 +203,10 @@ public class DownloadSVNCommits {
 		FileOutputStream fos = new FileOutputStream(fileNameOnDisk);
 
 		baos.writeTo(fos);
+		
+		
 	}
+		
+		
+		
 }
